@@ -92,7 +92,7 @@ We belive thet $\beta_1$,$\beta_4$, are positive but $\beta_2$,$\beta_2$, are ne
 
 ## Scandinavian electricity market
 
-After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded the there are the price seems to be the classic case of supply (S) and demand (D). the weather (W) plays a big roll in the price but this however most likley is correlated with the demand so it might provide the same information as the demand variable. like $\eqref{SEP}$.
+After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded the there are the price seems to be the classic case of supply (*S*) and demand (*D*). the weather (*W*) plays a big roll in the price but this however most likley is correlated with the demand so it might provide the same information as the demand variable. like $\eqref{SEP}$.
 
 
 \begin{equation}
@@ -108,7 +108,7 @@ We belive thet $\beta_1$, is positive since if the demand increasas the obviusy 
 
 ## Inflation
 
-It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems thet inflation based on Consumer Price Index (CPI), wage index(WI) Cost Of Living (COL) and Money Supply (MS). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.like $\eqref{I}$.
+It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems thet inflation based on Consumer Price Index (*CPI*), wage index(*WI*) Cost Of Living (*COL*) and Money Supply (*MS*). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.like $\eqref{I}$.
 
 
 \begin{equation}
@@ -123,7 +123,7 @@ It seems hard to find concreta data on http://www.hagstofan.com/ regardin how th
 
 # Housing Econimocs
 
-## Task 1
+## Task 1S
 
 ## Task 2
 
