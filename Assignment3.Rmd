@@ -1,0 +1,614 @@
+---
+title: "Project 3"
+author: 
+- "Júlíus Pétur Guðjohnsen"
+- "Sigurður Jónsson"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output: 
+  bookdown::html_document2: 
+    fig_height: 4
+    fig_width: 9
+    fig_caption: yes
+
+---
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+<style type="text/css">
+body{ /* Normal  */
+   font-family: "Times New Roman", Times, serif;
+   font-size: 16px;
+}
+td {  /* Table  */
+   font-size: 8px;
+}
+h1 { /* Header 1 */
+ font-family: "Times New Roman", Times, serif;
+ font-size: 28px;
+ color: Black;
+}
+h2 { /* Header 2 */
+ font-family: "Times New Roman", Times, serif;
+ font-size: 22px;
+ color: Black;
+}
+h3 { /* Header 3 */
+ font-family: "Times New Roman", Times, serif;
+ font-size: 18px;
+ color: Green;
+}
+code{ /* Code block */
+  font-size: 11px;
+}
+pre { /* Code block */
+  font-size: 11px
+}
+p[id='math inline']{
+   font-family: "Times New Roman", Times, serif;
+   font-size: 16px;
+}
+
+</style>
+
+
+
+
+
+
+
+```{r setup, echo=F}
+library(bookdown)
+```
+
+
+
+
+# Brain Storming Excersise
+
+## Stock price index
+
+After some reserch on stock prices we belive the gross domestic priduct (*GDP*) would be one causal variable for the stock price index (*SPI*). Althog we currently have restriction og currency exhance here in iceland we belive that in an unrestricted market in a small country like iceland tha exchange rate (*ER*) would have a big impact on the SPI, specialy for companies in tha export buisness. Another causal variable would be the inflation (*I*) which effects the room for expansion of companies. The last but probably the most importan one would be the companies overal performance (*COP*) this varibal is estimatat according to standart procedures regarid the financial ratios of tha company in question for example *dept coverage ratio* etc. so the strucual equation should look like $\eqref{SPI}$.
+
+
+\begin{equation}
+  
+  SPI = \alpha + \beta_1 \cdot GDP + \beta_2 \cdot I + \beta_3 \cdot ER + \beta_4 \cdot COP + \epsilon
+  
+  \label{SPI}
+  
+\end{equation}
+
+We belive that $\beta_1$,$\beta_4$, are positive but $\beta_2$,$\beta_2$, are negative as inflation and exchange rate would have negative effects on the SPI.  
+
+
+## Scandinavian electricity market
+
+After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded tha there are the price seems to be tha classic case of supply (S) and demand (D). the weather (W) plays a big roll in the price but this however most likley is correlated with the demand so it might provide tha same information as the demand variable. 
+
+like $\eqref{SEP}$.
+
+
+\begin{equation}
+  
+  SEP = \alpha + \beta_1 \cdot S + \beta_2 \cdot D + \beta_3 \cdot W + \epsilon
+  
+  \label{SEP}
+  
+\end{equation}
+
+We belive that $\beta_1$, is positive since if the demand increasas the obviusy will result in a higer price of electricity and visa versa for $\beta_2$. the weather variable should be negative, due to the fact that good weather shoude reduce the consumptuin of electriciti in house heating etc.  
+
+
+## Inflation
+
+It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems that inflation based on Consumer Price Index (CPI), wage index(WI) Cost Of Living (COL) and Money Supply (MS). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.
+
+like $\eqref{I}$.
+
+
+\begin{equation}
+  
+  I = \alpha + \beta_1 \cdot CPI + \beta_2 \cdot WI + \beta_3 \cdot COL + \beta_4 \cdot ML + \epsilon
+  
+  \label{I}
+  
+\end{equation}
+
+***
+
+# Housing Econimocs
+
+## Task 1
+
+## Task 2
+
+## Task 3
+
+## Task 4
+
+***
+
+# Sales modeling
+
+## Task 1
+
+For this task we are to construct a salesmodel from the provided dataset. The datesets consists of around 20 variables wich can be used to construct a model for the sales. After some very basis investigation of what the datamodel consists of we come to the conclution of using 4 varibles in tha salesmodel. The first variable (*SE*) is the sesonal variable. tha seasonal varable should account for seasonality in tha data in respect to both the week of year and week of month. We belive tha customers should be more willing to spend money in the first week of the monthe due to a more positive ballance on tha bank account of being payed frome there emplyeer. In respect to the week of year seasonality we should se some classic patterns of consumers for exaple less willingness to purchase after the christmas season and therefor the sign of this variable should be positive. The second varible is the unemployment rate called (*E*) as it should reflect the current economic status of the consumers. It is known that in with higher rates of unemployment the tha purchasing power goes down so this varaible should give insight to the purchasing power and therefor the sign of the economic variable should be negetive(with respect to unemplyment rate). The third varible is weather varible (*W*), we belive that tha wether will have a effect on the sales, we do have some weather parameters in tha data and will have to decide on wich to use with some futher analysis so the sign of the weather variable is hard to estimate without further analysis. The last varable (*M*) is the marketing varible this one should be positive as there should be positive correlation between brandi the store and spending in tha store. Below we can see the salesmodel in equation $\eqref{eq1}$.
+
+
+\begin{equation}
+  
+  SM = \alpha + \beta_1 \cdot SE + \beta_2 \cdot E + \beta_3 \cdot W + \beta_4 \cdot M + \epsilon
+  
+  \label{eq1}
+  
+\end{equation}
+
+
+## Task 2
+
+
+The purpos of this task is to get familiar whith tha dataset we are working with. The obvius first step is simply to plot the sales of the buildingsupply store which we can see in fig.\@ref(fig:chunk1). below we go into further analysis step by step.Hopfully we vwill ba able to end up with a model that follows tha structual eqaution of $\eqref{eq1}$. by combining and droping irrelevent data.
+
+
+```{r chunk1,fig.cap = "Sales from 2006 to mid 2009", fig.align='center', fig.height=4,fig.width=9}
+#rm(list=ls())
+suppressPackageStartupMessages(require(ggplot2))
+suppressPackageStartupMessages(require(ggfortify))
+suppressPackageStartupMessages(require(reshape2))
+suppressPackageStartupMessages(require(forecast))
+source("Multiplot.R")
+
+setwd("C:/Users/Julius/Desktop/Skóli Haust 2016/tima/Assignment3")
+BuildingSupplyStore <- read.csv("BSS.csv",stringsAsFactors = FALSE,header=TRUE, sep=";")
+
+BuildingSupplyStore$Week.of.Year <- substr(BuildingSupplyStore[,1], 6, 7)
+BuildingSupplyStore$Year <- substr(BuildingSupplyStore[,1], 1, 4)
+BuildingSupplyStore$Rtime <- as.numeric(substr(BuildingSupplyStore[,1], 1, 4))+
+as.numeric(substr(BuildingSupplyStore[,1], 6, 7) )/52 - 1/52
+
+BuildingSupplyStore$Kalendar <- as.factor(BuildingSupplyStore$Kalendar)
+BuildingSupplyStore <- within(BuildingSupplyStore, Kalendar <- relevel(Kalendar, ref = "Normal"))
+
+#sapply(BuildingSupplyStore, class)
+summary(BuildingSupplyStore)
+attach(BuildingSupplyStore)
+
+df <-BuildingSupplyStore[,c(25,2)]
+#df[,1] <- as.Date(paste(df$Date,1,sep = "-"),format="%Y-%W-%w")
+df[,2] <- as.numeric(df[,2])
+smoothSales <- lowess(Sales, f=.1)
+df$smoothed <- smoothSales$y  
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="smoothed",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="smoothed",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+
+```
+
+
+Next we plotted the sales per week of year along with the smoothed value to se the monthly variations in sales, as we see in fig.\@ref(fig:monthlySales) Sales seem to bee dropping in the later part of the year but that is due to the data lacking the later halft of the year 2009. 
+
+ 
+```{r monthlySales,eval=TRUE, echo=TRUE,message=FALSE,fig.cap=("The Weekly sales for each year"),fig.align='center'}
+#plot the years stacked, sails as a function of week
+df2 <- data.frame(matrix(ncol = 6, nrow = 52))
+x <- c("Week","sales2006", "sales2007", "sales2008","sales2009","smoothed")
+colnames(df2) <- x
+
+df2$Week[1:52] = 1:52
+df2$sales2006[1:52] = BuildingSupplyStore$Sales[(BuildingSupplyStore$Year == "2006")]
+df2$sales2007[1:52] = BuildingSupplyStore$Sales[(BuildingSupplyStore$Year == "2007")]
+df2$sales2008[1:52] = BuildingSupplyStore$Sales[(BuildingSupplyStore$Year == "2008")]
+df2$sales2009[1:25] = BuildingSupplyStore$Sales[(BuildingSupplyStore$Year == "2009")]
+
+smootheWeek <- lowess(rowMeans(df2[,c(2:5)],na.rm = TRUE)~df2$Week, f=.1)
+df2$smoothed <- smootheWeek$y
+
+df2 <- melt(df2,id=1)
+df2 <- na.omit(df2)
+
+ggplot(data = df2, aes(x=Week)) + 
+geom_line(data = df2[df2$variable!="smoothed",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data = df2[df2$variable=="smoothed",], aes(y=value,colour=variable),size=0.8)+
+
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+```
+
+
+Now its goot to go some baskic priliminary analysis like ACF and PACF plots of tha data, as we can see in fig.\@ref(fig:salesACF) there is a clear pattern in tha plots so hopfully we will be able to brake down the data and make a good model  
+
+```{r salesACF, eval=TRUE, echo=F,message=FALSE,fig.height=8,fig.width=9,fig.cap=list("AFC plot (top) and the PACF (bottom) of the Sales numbers"),fig.align='center'}
+A <- ggAcf(Sales)+ 
+ggtitle("Series: Sales")+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+theme(plot.title = element_text(size=9))  
+
+
+B <- ggPacf(Sales)+ 
+ggtitle("Series: Sales")+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+theme(plot.title = element_text(size=9))
+  
+multiplot(A,B)
+```
+
+The next step was to make a full model usin all the available parameters in tha data, We will hopfully be able to improve ths model with the methods descussed in lecturs. The full model in fig.\@ref(fig:ACFresidual) will serve as tha benchmark to beat. tha aime is to reduce tha parameters needed to derive a model and therafor reduce the posabillity of varibal inflation and other negative aspects of using all the parameters in a sigle model.
+
+```{r fullmodel,eval=TRUE, echo=T,message=FALSE}
+mod.full <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed +Sol.Oslo+ Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation + Print + InStore + DirectMarketing + TV.Image + TV.Taktisk,data = BuildingSupplyStore)
+summary(mod.full)
+```
+
+
+
+
+```{r ACFresidual, eval=T, echo=F,message=FALSE, fig.cap=list("","ACF of residual for the first basic Linnear regression model (top) and tha fit of the model (bottom)"),fig.align='center'}
+
+ggAcf(mod.full$residuals)
+
+attach(BuildingSupplyStore)
+
+
+df <-BuildingSupplyStore[,c(25,2)]
+df[,2] <- as.numeric(df[,2])
+df$Model.fit <- mod.full$fitted.values
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="Model.fit",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="Model.fit",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+```
+
+
+
+
+
+
+
+
+
+
+## Task 3
+To begin this tas it is recomanded to plot all the Media spending fig.\@ref(fig:Mediaspending) of the retailer. This is done to get a vizualisation of what we are working with. As we are trying to make new variable that accounts for total media spenging and the assumed effect of each of the types. There will be að decaing effect of each of the catagories of media and from the inital plot we can try to guess tha decaing parameter to smooth out the new media variable called Media.adstock and hopfully get an significant new variable.
+
+```{r Mediaspending, eval=TRUE, echo=T,message=FALSE, fig.cap="Plot of the media spending for each media type", fig.align='center'}
+df4 <-BuildingSupplyStore[,c(25,17,18,19,20,21,22)]
+
+df4 <- melt(df4,id=1)
+ggplot(data = df4, aes(x=Rtime))+
+geom_line(data = df4[df4$variable!="Media.adstock",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df4[df4$variable=="Media.adstock",], aes(y=value,colour=variable),size=0.8)+
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.4, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+```
+
+
+
+```{r eval=F, echo=T,message=FALSE}
+adstock <- function(X,a){
+  Y<-rep(NA, length(X))
+  Y[1]<-X[1]  
+  for (i in 2:length(X)){
+    Y[i]<-X[i]+a*Y[i-1]
+  }
+  return(Y)
+}
+attach(BuildingSupplyStore)
+
+adstockLR <- function(x){
+
+Media.adstock <-  adstock(Print,x[1])+ adstock(InStore,x[2])+ adstock(DirectMarketing,x[3])+adstock(RADIO,x[4])+adstock(TV.Taktisk,x[5])+adstock(TV.Image,x[6])  
+BuildingSupplyStore$Media.adstock <- Media.adstock
+mod.fullLM <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed + Respons.Media +Sol.Oslo+ Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation+ Media.adstock,data = BuildingSupplyStore)
+  
+return(coef(summary(mod.fullLM))["Media.adstock", 1] /coef(summary(mod.fullLM))["Media.adstock", 2] )
+
+}
+
+res <- optim(c(0.5,0.5,0.5,0.5,0.5,0.5), adstockLR,lower = 0.1,upper = 1,method = "L-BFGS-B",control=list(fnscale=-1))
+
+
+BuildingSupplyStore$Print.adstock <- adstock(Print,res$par[1]) 
+BuildingSupplyStore$InStore.adstock <- adstock(InStore,res$par[2]) 
+BuildingSupplyStore$DirectMarketing.adstock <- adstock(DirectMarketing,res$par[3])
+BuildingSupplyStore$RADIO.adstock <- adstock(RADIO,res$par[4])
+BuildingSupplyStore$TV.Taktisk.adstock <- adstock(TV.Taktisk,res$par[5])
+BuildingSupplyStore$TV.Image.adstock <- adstock(TV.Image,res$par[6])
+
+
+BuildingSupplyStore$Media.adstock <- BuildingSupplyStore$Print.adstock + BuildingSupplyStore$InStore.adstock + BuildingSupplyStore$DirectMarketing.adstock + BuildingSupplyStore$RADIO.adstock + BuildingSupplyStore$TV.Image.adstock + BuildingSupplyStore$TV.Taktisk.adstock
+
+
+pltList <- list()
+for(i in 1:6){
+
+df4 <-BuildingSupplyStore[,c(25,16+i,25+i)]
+df4 <- melt(df4,id=1)
+pltList[[ paste0("p", i) ]] <-  (ggplot(data = df4, aes(x=Rtime))+
+geom_line(data = df4, aes(y=value,colour=variable),size=0.4)+
+theme(legend.title = element_blank())+
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="top")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.4, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.y = element_text(size=9))+
+theme(axis.title.x = element_blank()))
+
+}
+
+multiplot(pltList[[1]],pltList[[2]],cols = 2)
+multiplot(pltList[[3]],pltList[[4]],cols = 2)
+multiplot(pltList[[5]],pltList[[6]],cols = 2)
+
+```
+
+After trying to manualy adjust all the constans for decay og the media varable we were not able to generate the new variable Media.adstock that vould have any statistical significance to the model. To try to get the variable to have any meaning to the model we used optimization to determine the decaying constant for all the media variabls. the objective of the optimization model was to minimize the beta estimate vor the Media.adstock divided by the standard error of the estimate. in the end we were able to get a 3* significans to the Media.adstock variable and left it there. in fig.\@ref(fig:adstock) we can se both the value of spending for each of the media outlets with the corresponding adstock variable with the parameters optimized.
+
+```{r adstock,eval=TRUE, echo=F,message=FALSE,fig.cap=list("","","The optimized adstock variable for allt the media outlets"), fig.align='center'}
+adstock <- function(X,a){
+  Y<-rep(NA, length(X))
+  Y[1]<-X[1]  
+  for (i in 2:length(X)){
+    Y[i]<-X[i]+a*Y[i-1]
+  }
+  return(Y)
+}
+attach(BuildingSupplyStore)
+
+adstockLR <- function(x){
+
+Media.adstock <-  adstock(Print,x[1])+ adstock(InStore,x[2])+ adstock(DirectMarketing,x[3])+adstock(RADIO,x[4])+adstock(TV.Taktisk,x[5])+adstock(TV.Image,x[6])  
+BuildingSupplyStore$Media.adstock <- Media.adstock
+mod.fullLM <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed + Respons.Media + Sol.Oslo + Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation + Media.adstock,data = BuildingSupplyStore)
+  
+return(coef(summary(mod.fullLM))["Media.adstock", 1] /coef(summary(mod.fullLM))["Media.adstock", 2] )
+
+}
+
+res <- optim(c(0.5,0.5,0.5,0.5,0.5,0.5), adstockLR,lower = 0.1,upper = 1,method = "L-BFGS-B",control=list(fnscale=-1))
+
+
+BuildingSupplyStore$Print.adstock <- adstock(Print,res$par[1]) 
+BuildingSupplyStore$InStore.adstock <- adstock(InStore,res$par[2]) 
+BuildingSupplyStore$DirectMarketing.adstock <- adstock(DirectMarketing,res$par[3])
+BuildingSupplyStore$RADIO.adstock <- adstock(RADIO,res$par[4])
+BuildingSupplyStore$TV.Taktisk.adstock <- adstock(TV.Taktisk,res$par[5])
+BuildingSupplyStore$TV.Image.adstock <- adstock(TV.Image,res$par[6])
+
+
+BuildingSupplyStore$Media.adstock <- BuildingSupplyStore$Print.adstock + BuildingSupplyStore$InStore.adstock + BuildingSupplyStore$DirectMarketing.adstock + BuildingSupplyStore$RADIO.adstock + BuildingSupplyStore$TV.Image.adstock + BuildingSupplyStore$TV.Taktisk.adstock
+
+
+pltList <- list()
+for(i in 1:6){
+
+df4 <-BuildingSupplyStore[,c(25,16+i,25+i)]
+df4 <- melt(df4,id=1)
+pltList[[ paste0("p", i) ]] <-  (ggplot(data = df4, aes(x=Rtime))+
+geom_line(data = df4, aes(y=value,colour=variable),size=0.4)+
+theme(legend.title = element_blank())+
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="top")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.4, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.y = element_text(size=9))+
+theme(axis.title.x = element_blank()))
+
+}
+
+multiplot(pltList[[1]],pltList[[2]],cols = 2)
+multiplot(pltList[[3]],pltList[[4]],cols = 2)
+multiplot(pltList[[5]],pltList[[6]],cols = 2)
+```
+
+After the optimization we plotted the new variable Media.adstock along with the money spent on each of the media outlets. In fig.\@ref(fig:chunk3) we can se the new variable, It seems to bee quite choppy and has a quite a bit of fluctuation in it but the haowever seems to do the trick to be able to reduce the error of the model.
+
+```{r chunk3, eval=TRUE, echo=T,message=FALSE,fig.cap="The Media.adstock variable along with the money invested in media advertisement", fig.align='center'}
+df4 <-BuildingSupplyStore[,c(25,17,18,19,20,21,22,32)]
+
+df4 <- melt(df4,id=1)
+ggplot(data = df4, aes(x=Rtime))+
+geom_line(data = df4[df4$variable!="Media.adstock",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df4[df4$variable=="Media.adstock",], aes(y=value,colour=variable),size=0.8)+
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.4, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+```
+
+So finaly can print out the summary for the model so far and print the residual and the ACF og the residuals. as we can se in fig.\@ref(fig:residplot) the residuals are looking a bit like white noize, some shift seems to be going on tin the later part of 2009. as we can se in the figure the autocorrelation is marginaly beond the confidence interval so we are getting closer to the final model.
+
+```{r residplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("","The residual plot and tha ACF af the residual"), fig.align='center'}
+mod.Media <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed + Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation + Media.adstock,data = BuildingSupplyStore)
+summary(mod.Media)
+
+df <-BuildingSupplyStore[,c(25,2)]
+plebbi <- as.vector(mod.Media$residuals)
+df$Residual <- plebbi
+df$Sales <- NULL
+smoothres <- lowess(as.vector(mod.Media$residuals), f=.3)
+df$smoothed <- smoothres$y  
+df <- melt(df,id=1)
+
+
+ggplot(data = df, aes(x=Rtime))+
+geom_point(data = df[df$variable!="smoothed",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="smoothed",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+ggAcf(mod.Media$residuals)
+```
+
+## Task 4
+To make tha best model fit we decided to make one Weater varable with a weighted average of all the wather data, this is done in a similar manner as tha optimization in task 3. we ar going to drop the competitiorspendinras itdoes notseem to improve the model as vell as add two newbinari variable to indicate if it is summer or christmas season.
+
+```{r eval=TRUE, echo=F,message=FALSE}
+
+weatherLR <- function(x){
+
+Weather <-  x[1]*Sol.Oslo+x[2]*Oslo...Mean.temperature+x[3]*Oslo...Total.precipitation+x[4]*Bergen...Mean.temperature+x[5]*Bergen...Total.precipitation
+BuildingSupplyStore$Weather <- Weather
+mod.fullLM <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Media.adstock+Weather,data = BuildingSupplyStore)
+  
+return(coef(summary(mod.fullLM))["Weather", 1] /coef(summary(mod.fullLM))["Weather", 2] )
+
+}
+
+res2 <- optim(c(0.5,0.5,0.5,0.5,0.5), weatherLR,lower = 0.1,upper = 2,method = "L-BFGS-B",control=list(fnscale=-1))
+
+#res2$par
+
+Weather <-  res2$par[1]*Sol.Oslo+res2$par[2]*Oslo...Mean.temperature+res2$par[3]*Oslo...Total.precipitation+res2$par[4]*Bergen...Mean.temperature+res2$par[5]*Bergen...Total.precipitation
+BuildingSupplyStore$Weather <- Weather
+mod.Weather <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Media.adstock+Weather,data = BuildingSupplyStore)
+
+summary(mod.Weather)
+
+```
+
+```{r logical , eval=TRUE, echo=F, message=FALSE}
+
+BuildingSupplyStore$isChristmas <- as.numeric(BuildingSupplyStore$Week.of.Year >= 49)
+
+BuildingSupplyStore$isSummer <- as.numeric((BuildingSupplyStore$Week.of.Year >= 25) & (BuildingSupplyStore$Week.of.Year <= 33))
+
+attach(BuildingSupplyStore)
+
+mod.logical <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Media.adstock+Weather+isChristmas+isSummer,data = BuildingSupplyStore)
+
+summary(mod.logical)
+
+```
+
+```{r fitplot, eval=TRUE, echo=F, message=FALSE, fig.cap=list("Here we have a slightly better fit with the logical variables for season"), fig.align='center'}
+df <-BuildingSupplyStore[,c(25,2)]
+df[,2] <- as.numeric(df[,2])
+df$Model.fit <- mod.logical$fitted.values
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="Model.fit",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="Model.fit",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+```
+
+
+
+```{r monthplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("The final model. we can se it fits tha data a lot better then the first model"), fig.align='center'}
+
+attach(BuildingSupplyStore)
+x2 <- msts(Sales, seasonal.periods=c(52,52/12))
+fit <- tbats(x2)
+BuildingSupplyStore$Mseason <- seasadj(fit)
+
+mod.month <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Salgdage + Unemployment.rate + Media.adstock+Weather+isChristmas+isSummer + Mseason,data = BuildingSupplyStore)
+summary(mod.month)
+
+df <-BuildingSupplyStore[,c(25,2)]
+df[,2] <- as.numeric(df[,2])
+df$Model.fit <- mod.month$fitted.values
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="Model.fit",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="Model.fit",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+```
