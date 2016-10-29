@@ -1,8 +1,8 @@
 ---
 title: "Project 3"
 author: 
-- "Júlíus Pétur Guðjohnsen"
-- "Sigurður Jónsson"
+- "JÃºlÃ­us PÃ©tur GuÃ°johnsen"
+- "SigurÃ°ur JÃ³nsson"
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output: 
   bookdown::html_document2: 
@@ -16,6 +16,12 @@ MathJax.Hub.Config({
   TeX: { equationNumbers: { autoNumber: "AMS" } }
 });
 </script>
+
+<script>
+    var MathJax = {"HTML-CSS": {scale: 80}};
+</script>
+
+
 
 <style type="text/css">
 body{ /* Normal  */
@@ -46,7 +52,7 @@ code{ /* Code block */
 pre { /* Code block */
   font-size: 11px
 }
-p[id='math inline']{
+span.inline{
    font-family: "Times New Roman", Times, serif;
    font-size: 16px;
 }
@@ -70,7 +76,7 @@ library(bookdown)
 
 ## Stock price index
 
-After some reserch on stock prices we belive the gross domestic priduct (*GDP*) would be one causal variable for the stock price index (*SPI*). Althog we currently have restriction og currency exhance here in iceland we belive that in an unrestricted market in a small country like iceland tha exchange rate (*ER*) would have a big impact on the SPI, specialy for companies in tha export buisness. Another causal variable would be the inflation (*I*) which effects the room for expansion of companies. The last but probably the most importan one would be the companies overal performance (*COP*) this varibal is estimatat according to standart procedures regarid the financial ratios of tha company in question for example *dept coverage ratio* etc. so the strucual equation should look like $\eqref{SPI}$.
+After some reserch on stock prices we belive the gross domestic priduct (*GDP*) would be one causal variable for the stock price index (*SPI*). Althog we currently have restriction og currency exhance here in iceland we belive thet in an unrestricted market in a small country like iceland the exchange rate (*ER*) would have a big impact on the SPI, specialy for companies in the export buisness. Another causal variable would be the inflation (*I*) which effects the room for expansion of companies. The last but probably the most importan one would be the companies overal performance (*COP*) this varibal is estimatat according to standart procedures regarid the financial ratios of the company in question for example *dept coverage ratio* etc. so the strucual equation should look like $\eqref{SPI}$.
 
 
 \begin{equation}
@@ -81,14 +87,12 @@ After some reserch on stock prices we belive the gross domestic priduct (*GDP*) 
   
 \end{equation}
 
-We belive that $\beta_1$,$\beta_4$, are positive but $\beta_2$,$\beta_2$, are negative as inflation and exchange rate would have negative effects on the SPI.  
+We belive thet $\beta_1$,$\beta_4$, are positive but $\beta_2$,$\beta_2$, are negative as inflation and exchange rate would have negative effects on the SPI.  
 
 
 ## Scandinavian electricity market
 
-After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded tha there are the price seems to be tha classic case of supply (S) and demand (D). the weather (W) plays a big roll in the price but this however most likley is correlated with the demand so it might provide tha same information as the demand variable. 
-
-like $\eqref{SEP}$.
+After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded the there are the price seems to be the classic case of supply (S) and demand (D). the weather (W) plays a big roll in the price but this however most likley is correlated with the demand so it might provide the same information as the demand variable. like $\eqref{SEP}$.
 
 
 \begin{equation}
@@ -99,14 +103,12 @@ like $\eqref{SEP}$.
   
 \end{equation}
 
-We belive that $\beta_1$, is positive since if the demand increasas the obviusy will result in a higer price of electricity and visa versa for $\beta_2$. the weather variable should be negative, due to the fact that good weather shoude reduce the consumptuin of electriciti in house heating etc.  
+We belive thet $\beta_1$, is positive since if the demand increasas the obviusy will result in a higer price of electricity and visa versa for $\beta_2$. the weather variable should be negative, due to the fact thet good weather shoude reduce the consumptuin of electriciti in house heating etc.  
 
 
 ## Inflation
 
-It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems that inflation based on Consumer Price Index (CPI), wage index(WI) Cost Of Living (COL) and Money Supply (MS). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.
-
-like $\eqref{I}$.
+It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems thet inflation based on Consumer Price Index (CPI), wage index(WI) Cost Of Living (COL) and Money Supply (MS). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.like $\eqref{I}$.
 
 
 \begin{equation}
@@ -135,7 +137,7 @@ like $\eqref{I}$.
 
 ## Task 1
 
-For this task we are to construct a salesmodel from the provided dataset. The datesets consists of around 20 variables wich can be used to construct a model for the sales. After some very basis investigation of what the datamodel consists of we come to the conclution of using 4 varibles in tha salesmodel. The first variable (*SE*) is the sesonal variable. tha seasonal varable should account for seasonality in tha data in respect to both the week of year and week of month. We belive tha customers should be more willing to spend money in the first week of the monthe due to a more positive ballance on tha bank account of being payed frome there emplyeer. In respect to the week of year seasonality we should se some classic patterns of consumers for exaple less willingness to purchase after the christmas season and therefor the sign of this variable should be positive. The second varible is the unemployment rate called (*E*) as it should reflect the current economic status of the consumers. It is known that in with higher rates of unemployment the tha purchasing power goes down so this varaible should give insight to the purchasing power and therefor the sign of the economic variable should be negetive(with respect to unemplyment rate). The third varible is weather varible (*W*), we belive that tha wether will have a effect on the sales, we do have some weather parameters in tha data and will have to decide on wich to use with some futher analysis so the sign of the weather variable is hard to estimate without further analysis. The last varable (*M*) is the marketing varible this one should be positive as there should be positive correlation between brandi the store and spending in tha store. Below we can see the salesmodel in equation $\eqref{eq1}$.
+For this task we are to construct a salesmodel from the provided dataset. The datesets consists of around 20 variables wich can be used to construct a model for the sales. After some very basis investigation of what the datamodel consists of we come to the conclution of using 4 varibles in the salesmodel. The first variable (*SE*) is the sesonal variable. the seasonal varable should account for seasonality in the data in respect to both the week of year and week of month. We belive the customers should be more willing to spend money in the first week of the monthe due to a more positive ballance on the bank account of being payed frome there emplyeer. In respect to the week of year seasonality we should se some classic patterns of consumers for exaple less willingness to purchase after the christmas season and therefor the sign of this variable should be positive. The second varible is the unemployment rate called (*E*) as it should reflect the current economic status of the consumers. It is known thet in with higher rates of unemployment the the purchasing power goes down so this varaible should give insight to the purchasing power and therefor the sign of the economic variable should be negetive(with respect to unemplyment rate). The third varible is weather varible (*W*), we belive thet the wether will have a effect on the sales, we do have some weather parameters in the data and will have to decide on wich to use with some futher analysis so the sign of the weather variable is hard to estimate without further analysis. The last varable (*M*) is the marketing varible this one should be positive as there should be positive correlation between brandi the store and spending in the store. Below we can see the salesmodel in equation $\eqref{eq1}$.
 
 
 \begin{equation}
@@ -150,7 +152,7 @@ For this task we are to construct a salesmodel from the provided dataset. The da
 ## Task 2
 
 
-The purpos of this task is to get familiar whith tha dataset we are working with. The obvius first step is simply to plot the sales of the buildingsupply store which we can see in fig.\@ref(fig:chunk1). below we go into further analysis step by step.Hopfully we vwill ba able to end up with a model that follows tha structual eqaution of $\eqref{eq1}$. by combining and droping irrelevent data.
+The purpos of this task is to get familiar whith the dataset we are working with. The obvius first step is simply to plot the sales of the buildingsupply store which we can see in fig.\@ref(fig:chunk1). below we go into further analysis step by step.Hopfully we vwill ba able to end up with a model thet follows the structual eqaution of $\eqref{eq1}$. by combining and droping irrelevent data.
 
 
 ```{r chunk1,fig.cap = "Sales from 2006 to mid 2009", fig.align='center', fig.height=4,fig.width=9}
@@ -161,7 +163,7 @@ suppressPackageStartupMessages(require(reshape2))
 suppressPackageStartupMessages(require(forecast))
 source("Multiplot.R")
 
-setwd("C:/Users/Julius/Desktop/Skóli Haust 2016/tima/Assignment3")
+setwd("C:/Users/Julius/Desktop/SkÃ³li Haust 2016/tima/Assignment3")
 BuildingSupplyStore <- read.csv("BSS.csv",stringsAsFactors = FALSE,header=TRUE, sep=";")
 
 BuildingSupplyStore$Week.of.Year <- substr(BuildingSupplyStore[,1], 6, 7)
@@ -202,7 +204,7 @@ labs(x = "time")
 ```
 
 
-Next we plotted the sales per week of year along with the smoothed value to se the monthly variations in sales, as we see in fig.\@ref(fig:monthlySales) Sales seem to bee dropping in the later part of the year but that is due to the data lacking the later halft of the year 2009. 
+Next we plotted the sales per week of year along with the smoothed value to se the monthly variations in sales, as we see in fig.\@ref(fig:monthlySales) Sales seem to bee dropping in the later part of the year but thet is due to the data lacking the later half of the year 2009. 
 
  
 ```{r monthlySales,eval=TRUE, echo=TRUE,message=FALSE,fig.cap=("The Weekly sales for each year"),fig.align='center'}
@@ -241,7 +243,7 @@ labs(x = "time")
 ```
 
 
-Now its goot to go some baskic priliminary analysis like ACF and PACF plots of tha data, as we can see in fig.\@ref(fig:salesACF) there is a clear pattern in tha plots so hopfully we will be able to brake down the data and make a good model  
+Now its good to go some basic preliminary analysis like ACF and PACF plots of the data, as we can see in fig.\@ref(fig:salesACF) there is a clear pattern in the plots so hopefully we will be able to brake down the data and make a good model  
 
 ```{r salesACF, eval=TRUE, echo=F,message=FALSE,fig.height=8,fig.width=9,fig.cap=list("AFC plot (top) and the PACF (bottom) of the Sales numbers"),fig.align='center'}
 A <- ggAcf(Sales)+ 
@@ -264,7 +266,7 @@ theme(plot.title = element_text(size=9))
 multiplot(A,B)
 ```
 
-The next step was to make a full model usin all the available parameters in tha data, We will hopfully be able to improve ths model with the methods descussed in lecturs. The full model in fig.\@ref(fig:ACFresidual) will serve as tha benchmark to beat. tha aime is to reduce tha parameters needed to derive a model and therafor reduce the posabillity of varibal inflation and other negative aspects of using all the parameters in a sigle model.
+The next step was to make a full model using all the available parameters in the data, We will hopefully be able to improve this model with the methods discussed in lectures. The full model in fig.\@ref(fig:ACFresidual) will serve as they benchmark to beat. they aim is to reduce the parameters needed to derive a model and therefor reduce the possibility of variable inflation and other negative aspects of using all the parameters in a single model.
 
 ```{r fullmodel,eval=TRUE, echo=T,message=FALSE}
 mod.full <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed +Sol.Oslo+ Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation + Print + InStore + DirectMarketing + TV.Image + TV.Taktisk,data = BuildingSupplyStore)
@@ -274,7 +276,7 @@ summary(mod.full)
 
 
 
-```{r ACFresidual, eval=T, echo=F,message=FALSE, fig.cap=list("","ACF of residual for the first basic Linnear regression model (top) and tha fit of the model (bottom)"),fig.align='center'}
+```{r ACFresidual, eval=T, echo=F,message=FALSE, fig.cap=list("","ACF of residual for the first basic Linnear regression model (top) and the fit of the model (bottom)"),fig.align='center'}
 
 ggAcf(mod.full$residuals)
 
@@ -313,7 +315,7 @@ labs(x = "time")
 
 
 ## Task 3
-To begin this tas it is recomanded to plot all the Media spending fig.\@ref(fig:Mediaspending) of the retailer. This is done to get a vizualisation of what we are working with. As we are trying to make new variable that accounts for total media spenging and the assumed effect of each of the types. There will be að decaing effect of each of the catagories of media and from the inital plot we can try to guess tha decaing parameter to smooth out the new media variable called Media.adstock and hopfully get an significant new variable.
+To begin this task it is recomanded to plot all the Media spending fig.\@ref(fig:Mediaspending) of the retailer. This is done to get a vizualisation of what we are working with. As we are trying to make new variable thet accounts for total media spenging and the assumed effect of each of the types. There will be aÃ° decaing effect of each of the catagories of media and from the inital plot we can try to guess the decaing parameter to smooth out the new media variable called Media.adstock and hopfully get an significant new variable.
 
 ```{r Mediaspending, eval=TRUE, echo=T,message=FALSE, fig.cap="Plot of the media spending for each media type", fig.align='center'}
 df4 <-BuildingSupplyStore[,c(25,17,18,19,20,21,22)]
@@ -398,7 +400,7 @@ multiplot(pltList[[5]],pltList[[6]],cols = 2)
 
 ```
 
-After trying to manualy adjust all the constans for decay og the media varable we were not able to generate the new variable Media.adstock that vould have any statistical significance to the model. To try to get the variable to have any meaning to the model we used optimization to determine the decaying constant for all the media variabls. the objective of the optimization model was to minimize the beta estimate vor the Media.adstock divided by the standard error of the estimate. in the end we were able to get a 3* significans to the Media.adstock variable and left it there. in fig.\@ref(fig:adstock) we can se both the value of spending for each of the media outlets with the corresponding adstock variable with the parameters optimized.
+After trying to manualy adjust all the constans for decay og the media varable we were not able to generate the new variable Media.adstock thet vould have any statistical significance to the model. To try to get the variable to have any meaning to the model we used optimization to determine the decaying constant for all the media variabls. the objective of the optimization model was to minimize the beta estimate vor the Media.adstock divided by the standard error of the estimate. in the end we were able to get a 3* significans to the Media.adstock variable and left it there. in fig.\@ref(fig:adstock) we can se both the value of spending for each of the media outlets with the corresponding adstock variable with the parameters optimized.
 
 ```{r adstock,eval=TRUE, echo=F,message=FALSE,fig.cap=list("","","The optimized adstock variable for allt the media outlets"), fig.align='center'}
 adstock <- function(X,a){
@@ -484,7 +486,7 @@ labs(x = "time")
 
 So finaly can print out the summary for the model so far and print the residual and the ACF og the residuals. as we can se in fig.\@ref(fig:residplot) the residuals are looking a bit like white noize, some shift seems to be going on tin the later part of 2009. as we can se in the figure the autocorrelation is marginaly beond the confidence interval so we are getting closer to the final model.
 
-```{r residplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("","The residual plot and tha ACF af the residual"), fig.align='center'}
+```{r residplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("","The residual plot and the ACF af the residual"), fig.align='center'}
 mod.Media <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed + Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation + Media.adstock,data = BuildingSupplyStore)
 summary(mod.Media)
 
@@ -516,7 +518,7 @@ ggAcf(mod.Media$residuals)
 ```
 
 ## Task 4
-To make tha best model fit we decided to make one Weater varable with a weighted average of all the wather data, this is done in a similar manner as tha optimization in task 3. we ar going to drop the competitiorspendinras itdoes notseem to improve the model as vell as add two newbinari variable to indicate if it is summer or christmas season.
+To make the best model fit we decided to make one Weater varable with a weighted average of all the wather data, this is done in a similar manner as the optimization in task 3. we ar going to drop the competitiorspendinras itdoes notseem to improve the model as vell as add two newbinari variable to indicate if it is summer or christmas season.
 
 ```{r eval=TRUE, echo=F,message=FALSE}
 
@@ -581,7 +583,7 @@ labs(x = "time")
 
 
 
-```{r monthplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("The final model. we can se it fits tha data a lot better then the first model"), fig.align='center'}
+```{r monthplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("The final model. we can se it fits the data a lot better then the first model"), fig.align='center'}
 
 attach(BuildingSupplyStore)
 x2 <- msts(Sales, seasonal.periods=c(52,52/12))
