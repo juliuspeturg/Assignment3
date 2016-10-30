@@ -92,7 +92,7 @@ We belive thet $\beta_1$,$\beta_4$, are positive but $\beta_2$,$\beta_2$, are ne
 
 ## Scandinavian electricity market
 
-After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded the there are the price seems to be the classic case of supply (*S*) and demand (*D*). the weather (*W*) plays a big roll in the price but this however most likley is correlated with the demand so it might provide the same information as the demand variable. like $\eqref{SEP}$.
+After reading throug some of the information on http://www.nordpoolspot.com/How-does-it-work/ we concluded the there are the price seems to be the classic case of supply (S) and demand (D). the weather (W) plays a big roll in the price but this however most likley is correlated with the demand so it might provide the same information as the demand variable. like $\eqref{SEP}$.
 
 
 \begin{equation}
@@ -108,7 +108,7 @@ We belive thet $\beta_1$, is positive since if the demand increasas the obviusy 
 
 ## Inflation
 
-It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems thet inflation based on Consumer Price Index (*CPI*), wage index(*WI*) Cost Of Living (*COL*) and Money Supply (*MS*). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.like $\eqref{I}$.
+It seems hard to find concreta data on http://www.hagstofan.com/ regardin how the inflation is evaluated bu it seems thet inflation based on Consumer Price Index (CPI), wage index(WI) Cost Of Living (COL) and Money Supply (MS). as increas in all the indexes would result in higer inflation all the $\beta$ constans should be positive.like $\eqref{I}$.
 
 
 \begin{equation}
@@ -123,13 +123,290 @@ It seems hard to find concreta data on http://www.hagstofan.com/ regardin how th
 
 # Housing Econimocs
 
-## Task 1S
+## Task 1
+
+After some plotting of varibles wich we can see in fig.\@ref(fig:HPIall) we came to the conclution that equation $\eqref{HPI}$. would be a good Structual model for tha Housing Price Index (*HPI*). We will find out after some further analysis in later tasks if this prooves a strong model for the HPI. We belive that interest rates (*IR*) is a key indicator of (*HPI*). the (*I*) inflation should be a strong indicator aswell but might be harder to use for the fact the if inflation is high people tend to try to invest in realestat but in crontrast to that that might be hard to do since puchasing power is less during periods of high inflation. Two other varibles we belive play a big roll is finished housing (*HF*) and (*CC*) construction cost as it should reflect the classic case of supply and demand to the model. So $\beta_1$ should be negative as if interest rates are high we would se a drop in housing price(however this is hard to determine), $\beta_2$ is hard to determine if it is positive or negative as purchasing of housing can might seem like the right thing to do during high inflation but prooves hard, we belive that it in hovever negative. $\beta_3$ is most likly negative for the fact that if we flood the market with new apartments and demant gos down so will tha (*HPI*). Constructioncost $\beta_4$ is positive as it only makes sens tha if construction costs are high tha (*HPI*) well follow.
+
+
+\begin{equation}
+  
+  HPI = \alpha + \beta_1 \cdot IR + \beta_2 \cdot I + \beta_3 \cdot HF + \beta_4 \cdot CC + \epsilon
+  
+  \label{HPI}
+  
+\end{equation}
+
+
+
 
 ## Task 2
 
+```{r housing,fig.cap = "Sales from 2006 to mid 2009", fig.align='center', fig.height=4,fig.width=9}
+#rm(list=ls())
+suppressPackageStartupMessages(require(ggplot2))
+suppressPackageStartupMessages(require(ggfortify))
+suppressPackageStartupMessages(require(reshape2))
+suppressPackageStartupMessages(require(forecast))
+source("Multiplot.R")
+
+setwd("C:/Users/Julius/Desktop/Skóli Haust 2016/tima/Assignment3")
+HousingData <- read.csv("hpi.csv",stringsAsFactors = FALSE,header=TRUE, sep=";",dec=",")
+for(i in 2:ncol(HousingData)){
+  HousingData[,i] <- as.numeric(HousingData[,i])
+}
+
+
+summary(HousingData)
+attach(HousingData)
+
+HousingData$Rtime <- as.numeric(substr(HousingData[,1], 1, 4))+
+as.numeric(substr(HousingData[,1], 6, 7) )/12 - 1/12
+
+```
+
+
+The top plot of fig.\@ref(fig:HPIall) we se the how tha housing price index and lease index develop over the period to be analysed. judjing by this graph only we would determin that there not an endogenious relationship between tha variables. They seem to follow similar paths until beguining of 2005 where they part ways. after the the crises we see a big dropp in housing prices but tha lease index seems to only drop slightly but keep rising steddy. tha lease index seem to not be as sensitive to the bubble.
+
+```{r HPIall,eval=TRUE, echo=F,fig.cap = list("","","","","","","Normalized Housing Price Index and all variable in dataset"), fig.align='center', fig.height=4,fig.width=9}
+
+normalize <- function(value, min, max) {
+	normalized = (value - min(value)) / (max(value) - min(value))
+	return(normalized)
+}
+
+denormalize <- function(normalized, min, max) {
+	denormalized = (normalized * (max(normalized) - min(normalized)) + min(normalized));
+	return(denormalized)
+}
+
+
+Max = 0;
+Min = 1;
+
+Max = 0;
+Min = 1;
+
+
+df <-HousingData[,c(18,4:17)]
+for(i in 2:ncol(df)){
+  df[,i] <- as.numeric(normalize(df[,i],Min,Max))
+}
+
+
+pltList <- list()
+for(i in 1:13){
+  df4 <-df[,c(1,2,2+i)]
+  df4 <- melt(df4,id=1)
+  pltList[[ paste0("p", i) ]] <-  (ggplot(data = df4, aes(x=Rtime))+
+  geom_line(data = df4, aes(y=value,colour=variable),size=0.4)+
+  theme(legend.title = element_blank())+
+  #theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+  theme(legend.position="top")+
+  theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+  theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+  theme(legend.key.size = unit(0.4, "cm"))+
+  theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+  theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+  theme(axis.title.y = element_text(size=9))+
+  theme(axis.title.x = element_blank()))
+}
+
+multiplot(pltList[[1]],cols = 2)
+multiplot(pltList[[2]],pltList[[3]],cols = 2)
+multiplot(pltList[[4]],pltList[[5]],cols = 2)
+multiplot(pltList[[6]],pltList[[7]],cols = 2)
+multiplot(pltList[[8]],pltList[[9]],cols = 2)
+multiplot(pltList[[10]],pltList[[11]],cols = 2)
+multiplot(pltList[[12]],pltList[[13]],cols = 2)
+
+```
+If wee look back at fig.\@ref(fig:HPIall) and have a look at variables other than the lease index it most of them seem to show some correlation but would need further analysis to determin if they would be a signigicant causal variable to tha HPI.
+
 ## Task 3
 
+To make a model of tha data we started by including all the variable in tha model. and after some tryal and error investigation removed some of them. bellow we can se tha fit of tha full model alogn with the residual from that model
+
+```{r Housingfullmodel,eval=TRUE, echo=T,message=FALSE}
+Hmod.full <- lm(formula =  HousePriceIndex ~ Rtime + LeaseIndex + ConstructionCostIndex + RealEstateTransactions + LoansOfBanksToHouseholds + Un.indexedLoans + CentralBankRates + Inflation + PurchasingPower + PurchasingPowerOfWages + IndexLoans + CurrencyLoans + 
+HousingStarts + HousingFinished ,data = HousingData)
+summary(Hmod.full)
+```
+
+
+
+```{r Housingfit, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with all the data (top) and tha plot of the residual from the fitted model (bottom)"),fig.align='center'}
+
+df <-HousingData[,c(18,4)]
+# df[,2] <- as.numeric(df[,2])
+df$Model.fit <- Hmod.full$fitted.values
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="Model.fit",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="Model.fit",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+
+df <-HousingData[,c(18,4)]
+plebbi <- as.vector(Hmod.full$residuals)
+df$Residual <- plebbi
+df$HousePriceIndex <- NULL
+smoothres <- lowess(as.vector(Hmod.full$residuals), f=.3)
+df$smoothed <- smoothres$y  
+df <- melt(df,id=1)
+
+
+ggplot(data = df, aes(x=Rtime))+
+geom_point(data = df[df$variable!="smoothed",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="smoothed",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+
+```
+
+After removing data and only including tha data we belive is usefull for the model we get the following summary. If we compare ther residual plot of fig.\@ref(fig:Housingfit) and fig.\@ref(fig:Housingfitpartial) we seem to increas tha residual error and from that we concluded that reducing the data in this case is not benefiticial oposite to what is happening in tha salesmodel in later in this project. We also would have guesst that the puchasing power and purchasing power of wages would be giving tha same information to the model and we would get some varible inflation regarding the wo varibles bu that does not seem to be tha case.
+
+```{r partialmodel,eval=TRUE, echo=T,message=FALSE}
+Hmod2.full <- lm(formula = HousePriceIndex ~ Rtime + LeaseIndex + ConstructionCostIndex + LoansOfBanksToHouseholds + CentralBankRates + Inflation +
+IndexLoans + CurrencyLoans +  HousingFinished ,data = HousingData)
+summary(Hmod2.full)
+```
+
+```{r Housingfitpartial, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with only part of the data (top) and tha plot of the residual from the fitted model (bottom)"),fig.align='center'}
+
+df <-HousingData[,c(18,4)]
+# df[,2] <- as.numeric(df[,2])
+df$Model.fit <- Hmod2.full$fitted.values
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="Model.fit",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="Model.fit",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+
+df <-HousingData[,c(18,4)]
+plebbi <- as.vector(Hmod2.full$residuals)
+df$Residual <- plebbi
+df$HousePriceIndex <- NULL
+smoothres <- lowess(as.vector(Hmod2.full$residuals), f=.3)
+df$smoothed <- smoothres$y  
+df <- melt(df,id=1)
+
+
+ggplot(data = df, aes(x=Rtime))+
+geom_point(data = df[df$variable!="smoothed",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="smoothed",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+
+```
+
 ## Task 4
+
+As mention above we dont seem to improve tha model by reducing tha number of variables which might be a little strange compared to tha salesmodel where its seem efective, but to try to improve our model we introduced two new binary bariable. the first one called *BubbleStarts* is zerountil the beginning of year 2005 whene Íbíðarlánasjóður started offering 90% leverage lones fore the first time, at this timepoint the varible becoms 1. The next wariable is called *BubbleBursts* and is zero until October 2008 whene tha financial crises struck tha worl with its well known meltdown.
+
+```{r bubblemodel,eval=TRUE, echo=T,message=FALSE}
+
+
+HousingData$BubbleStarts <- as.numeric(HousingData$Rtime<2005)
+HousingData$BubbleBursts <- as.numeric(HousingData$Rtime>2008.75)
+
+BubbleModel <- lm(formula =  HousePriceIndex ~ Rtime + LeaseIndex + ConstructionCostIndex + RealEstateTransactions + LoansOfBanksToHouseholds + Un.indexedLoans + CentralBankRates + Inflation + PurchasingPower + PurchasingPowerOfWages + IndexLoans + CurrencyLoans + HousingStarts + HousingFinished +BubbleStarts+BubbleBursts,data = HousingData)
+summary(BubbleModel)
+```
+```{r HousingBubble, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with all tha data including the new Bubble binary variables (top) and tha plot of the residual from the fitted model (bottom)"),fig.align='center'}
+
+df <-HousingData[,c(18,4)]
+# df[,2] <- as.numeric(df[,2])
+df$Model.fit <- BubbleModel$fitted.values
+df <- melt(df,id=1)
+ggplot(data = df, aes(x=Rtime))+
+geom_line(data = df[df$variable!="Model.fit",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="Model.fit",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+
+df <-HousingData[,c(18,4)]
+plebbi <- as.vector(BubbleModel$residuals)
+df$Residual <- plebbi
+df$HousePriceIndex <- NULL
+smoothres <- lowess(as.vector(BubbleModel$residuals), f=.3)
+df$smoothed <- smoothres$y  
+df <- melt(df,id=1)
+
+
+ggplot(data = df, aes(x=Rtime))+
+geom_point(data = df[df$variable!="smoothed",], aes(y=value,colour=variable),size=0.4)+
+geom_line(data=df[df$variable=="smoothed",], aes(y=value,colour=variable),size=0.8)+
+  
+theme(legend.title = element_blank())+  
+#theme(legend.title = element_text(colour=rgb(0,0,0), size=9 ))+  
+theme(legend.position="right")+
+theme(legend.text = element_text(colour=rgb(0,0,0), size=9))+
+theme(legend.background = element_rect(fill=rgb(1,1,1), size=0.2, linetype=2))+
+theme(legend.key.size = unit(0.3, "cm"))+
+theme(axis.text.x = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.text.y = element_text(size=9, colour = rgb(0,0,0)))+
+theme(axis.title.x = element_text(size=9))+
+theme(axis.title.y = element_text(size=9))+
+labs(x = "time")
+
+```
+
 
 ***
 
@@ -272,8 +549,6 @@ The next step was to make a full model using all the available parameters in the
 mod.full <- lm(formula = Sales ~ Rtime + Season + Week.of.Month + Competitor.spending + Salgdage + Unemployment.rate + Tracking.smoothed +Sol.Oslo+ Oslo...Mean.temperature + Oslo...Total.precipitation + Bergen...Mean.temperature + Bergen...Total.precipitation + Print + InStore + DirectMarketing + TV.Image + TV.Taktisk,data = BuildingSupplyStore)
 summary(mod.full)
 ```
-
-
 
 
 ```{r ACFresidual, eval=T, echo=F,message=FALSE, fig.cap=list("","ACF of residual for the first basic Linnear regression model (top) and the fit of the model (bottom)"),fig.align='center'}
