@@ -125,7 +125,7 @@ It seems hard to find concrete data on http://www.hagstofan.com/ regarding how t
 
 ## Task 1
 
-After some plotting of variables which we can see in fig.\@ref(fig:HPIall) we came to the conclution that equation $\eqref{HPI}$. would be a good structual model for the Housing Price Index (*HPI*). We will find out after some further analysis in later tasks if this proves to be a strong model for the HPI. We believe that interest rates (*IR*) is a key indicator of (*HPI*). The (*I*) inflation should be a strong indicator as well but might be harder to use for the fact that if inflation is high people tend to try to invest in real estate but in contrast to that that might be hard to do since purchasing power is less during periods of high inflation. Two other varibles we believe play a big role is finished housing (*HF*) and (*CC*) construction cost as it should reflect the classic case of supply and demand to the model. So $\beta_1$ should be negative as if interest rates are high we would see a drop in housing price(however this is hard to determine), $\beta_2$ is hard to determine if it is positive or negative as purchasing of housing might seem like the right thing to do during high inflation but proves hard, we believe that it is however negative. $\beta_3$ is most likely negative for the fact that if we flood the market with new apartments and demand goes down so will the (*HPI*). Construction cost $\beta_4$ is positive as it only makes sens that if construction costs are high then (*HPI*) will follow as well.
+After some plotting of variables which we can see in fig.\@ref(fig:HPIall) we came to the conclution that equation $\eqref{HPI}$. would be a good structual model for the Housing Price Index (*HPI*). We will find out after some further analysis in later tasks if this proves to be a strong model for the HPI. We believe that interest rates (*IR*) is a key indicator of (*HPI*). The (*I*) inflation should be a strong indicator as well but might be harder to use for the fact that if inflation is high people tend to try to invest in real estate but in contrast to that that might be hard to do since purchasing power is less during periods of high inflation. Two other varibles we believe play a big role is finished housing (*HF*) and (*CC*) construction cost as it should reflect the classic case of supply and demand to the model. So $\beta_1$ should be negative as if interest rates are high we would see a drop in housing price(however this is hard to determine), $\beta_2$ is hard to determine if it is positive or negative as purchasing of housing might seem like the right thing to do during high inflation but proves hard, we believe that it is however negative. $\beta_3$ is most likely negative for the fact that if we flood the market with new apartments and demand goes down so will the (*HPI*). Construction cost $\beta_4$ is positive as it only makes sense that if construction costs are high then (*HPI*) will follow as well.
 
 
 \begin{equation}
@@ -167,7 +167,7 @@ as.numeric(substr(HousingData[,1], 6, 7) )/12 - 1/12
 
 The top plot of fig.\@ref(fig:HPIall) we see the how the housing price index and lease index develop over the period to be analysed. Judging by this graph only, we would determine that there is not an endogenous relationship between the variables. They seem to follow similar paths until the beginning of 2005 where they part ways. After the crisis we see a big drop in housing prices but the lease index seems to only drop slightly but then keeps rising steadily. The lease index seems to not be as sensitive to the bubble bursting.
 
-```{r HPIall,eval=TRUE, echo=F,fig.cap = list("","","","","","","Normalized Housing Price Index and all variable in dataset"), fig.align='center', fig.height=4,fig.width=9}
+```{r HPIall,eval=TRUE, echo=F,fig.cap = list("","","","","","","Normalized Housing Price Index and all variables in the dataset"), fig.align='center', fig.height=4,fig.width=9}
 
 normalize <- function(value, min, max) {
 	normalized = (value - min(value)) / (max(value) - min(value))
@@ -234,7 +234,7 @@ summary(Hmod.full)
 
 
 
-```{r Housingfit, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with all the data (top) and tha plot of the residual from the fitted model (bottom)"),fig.align='center'}
+```{r Housingfit, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with all the data (top) and the plot of the residual from the fitted model (bottom)"),fig.align='center'}
 
 df <-HousingData[,c(18,4)]
 # df[,2] <- as.numeric(df[,2])
@@ -293,7 +293,7 @@ IndexLoans + CurrencyLoans +  HousingFinished ,data = HousingData)
 summary(Hmod2.full)
 ```
 
-```{r Housingfitpartial, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with only part of the data (top) and tha plot of the residual from the fitted model (bottom)"),fig.align='center'}
+```{r Housingfitpartial, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with only part of the data (top) and the plot of the residual from the fitted model (bottom)"),fig.align='center'}
 
 df <-HousingData[,c(18,4)]
 # df[,2] <- as.numeric(df[,2])
@@ -357,7 +357,7 @@ HousingData$BubbleBursts <- as.numeric(HousingData$Rtime>2008.75)
 BubbleModel <- lm(formula =  HousePriceIndex ~ Rtime + LeaseIndex + ConstructionCostIndex + RealEstateTransactions + LoansOfBanksToHouseholds + Un.indexedLoans + CentralBankRates + Inflation + PurchasingPower + PurchasingPowerOfWages + IndexLoans + CurrencyLoans + HousingStarts + HousingFinished +BubbleStarts+BubbleBursts,data = HousingData)
 summary(BubbleModel)
 ```
-```{r HousingBubble, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with all tha data including the new Bubble binary variables (top) and tha plot of the residual from the fitted model (bottom)"),fig.align='center'}
+```{r HousingBubble, eval=T, echo=F,message=FALSE, fig.cap=list("","A plot of the fitted model with all the data including the new Bubble binary variables (top) and the plot of the residual from the fitted model (bottom)"),fig.align='center'}
 
 df <-HousingData[,c(18,4)]
 # df[,2] <- as.numeric(df[,2])
@@ -551,7 +551,7 @@ summary(mod.full)
 ```
 
 
-```{r ACFresidual, eval=T, echo=F,message=FALSE, fig.cap=list("","ACF of residual for the first basic Linnear regression model (top) and the fit of the model (bottom)"),fig.align='center'}
+```{r ACFresidual, eval=T, echo=F,message=FALSE, fig.cap=list("","ACF of residuals for the first basic Linear regression model (top) and the fit of the model (bottom)"),fig.align='center'}
 
 ggAcf(mod.full$residuals)
 
@@ -677,7 +677,7 @@ multiplot(pltList[[5]],pltList[[6]],cols = 2)
 
 After trying to manually adjust all the constants for decay of the media variable we were not able to generate the new variable Media.adstock that would have any statistical significance to the model. To try to get the variable to have any meaning to the model we used optimization to determine the decaying constant for all the media variabls. The objective of the optimization model was to minimize the beta estimate for the Media.adstock divided by the standard error of the estimate. In the end we were able to get a 3* significans to the Media.adstock variable and left it there. in fig.\@ref(fig:adstock) we can see both the value of spending for each of the media outlets with the corresponding adstock variable with the parameters optimized.
 
-```{r adstock,eval=TRUE, echo=F,message=FALSE,fig.cap=list("","","The optimized adstock variable for allt the media outlets"), fig.align='center'}
+```{r adstock,eval=TRUE, echo=F,message=FALSE,fig.cap=list("","","The optimized adstock variable for all the media outlets"), fig.align='center'}
 adstock <- function(X,a){
   Y<-rep(NA, length(X))
   Y[1]<-X[1]  
@@ -858,7 +858,7 @@ labs(x = "time")
 
 
 
-```{r monthplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("The final model. we can se it fits the data a lot better then the first model"), fig.align='center'}
+```{r monthplot, eval=TRUE, echo=F,message=FALSE,fig.cap=list("The final model - we can see it fits the data a lot better then the first model."), fig.align='center'}
 
 attach(BuildingSupplyStore)
 x2 <- msts(Sales, seasonal.periods=c(52,52/12))
