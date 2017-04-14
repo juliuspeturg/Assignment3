@@ -1,0 +1,1758 @@
+---
+documentclass: report
+bibliography: mybib.bib
+biblio-title: References
+biblio-style: plainnat
+fontsize: 12pt
+papersize: a4paper
+geometry: [left=2.50cm, right=2.50cm, top=2.50cm, bottom=2.50cm]
+graphics: true
+toc: true
+toc-depth: 4
+header-includes:
+   - \usepackage{algorithm2e}
+   - \usepackage{colortbl, tabularx, rotating}
+   - \usepackage{docmute}
+   - \usepackage[usenames, dvipsnames]{xcolor}
+   - \usepackage[edges]{forest}
+   - \usetikzlibrary{arrows.meta,shadows.blur}
+   - \usepackage[section]{placeins}
+   - \usepackage{booktabs}
+   - \usepackage{caption,setspace}
+   - \usepackage{float}
+   - \captionsetup[figure]{font={stretch=1.2}}
+output:
+  pdf_document:
+    citation_package: natbib
+    fig_caption: true
+    template: tempari3.tex
+    keep_tex: true
+    includes:
+      before_body: doc_prefix.tex
+---
+
+```{r setup, include=FALSE}
+heima <- T
+
+#setwd("C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/ritgerd2")
+#setwd("C:/Users/Julius/OneDrive - Reykjavik University/MThesis/ritgerd2")
+suppressPackageStartupMessages(require(dplyr))
+suppressPackageStartupMessages(require(plyr))
+suppressPackageStartupMessages(require(tidyr))
+suppressPackageStartupMessages(require(arules))
+suppressPackageStartupMessages(require(ggplot2))
+suppressPackageStartupMessages(require(reshape2))
+suppressPackageStartupMessages(require(xtable))
+suppressPackageStartupMessages(require(glpkAPI))
+suppressPackageStartupMessages(require(RColorBrewer))
+if(heima==F){
+source('C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis\\Rcode\\MTheme.R')
+source('C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis\\Rcode\\multiplot.R')
+source('C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis\\Rcode\\informs.R')
+} else{
+source('C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Rcode\\multiplot.R')
+source('C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Rcode\\MTheme.R')
+source('C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Rcode\\informs.R')
+}
+```
+
+```{r calculations, echo=F,eval=T,results='asis',results="hide"}
+
+#Load transactions from local R datafile
+if(heima==F){
+load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA.Rda")
+} else{
+load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda");    
+  }
+#load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda");
+#load(file="C:\\Users\\hr_juliusp\\Desktop\\MThesis\\Data\\LargeTA.Rda")
+#setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
+#load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA.Rda")
+#setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
+df <- res;
+df <- na.omit(df);
+
+#Sample 100 transactions from Dataset
+df.sample <- df[(df$TransactionNo %in% sample(df$TransactionNo,size=100000)),]
+
+#df.sample <- df[1:200000,]
+
+
+if(F){
+  df.sample2 <- df[(df$GroupName %in% sample(df$GroupName,size=10)),]
+
+df.sample <- df.sample2[(df.sample2$TransactionNo %in% sample(df.sample2$TransactionNo,size=1000)),]
+}
+
+
+#Extract the columns needed
+Transactions <- df.sample[,c(2,7,9)]
+DF <- Transactions[,c(1,2)]
+
+#Numerical matrix, total number of items in each transaction
+S <- Transactions %>% 
+  select(CustomerNo,CategoryName,NetProfit) %>%
+  distinct() %>%
+  mutate(value = NetProfit) %>%
+  spread(CategoryName, value, fill = 0)
+S <- S[,-2]
+#S <- ddply(S,.(CustomerNo), numcolwise(sum))
+
+S2 <- S %>% 
+  group_by(CustomerNo) %>% 
+  summarise_each(funs(sum))
+
+S <- as.data.frame(S2)
+
+E <- S[,(2:ncol(S))]
+G <- E
+L <- E!=0
+
+E[L] <- scale(E[L])
+#G[L] <- log(G[L])
+
+#E <- cbind("CustomerNo"=S$CustomerNo,E)
+G <- cbind("CustomerNo"=S$CustomerNo,G)
+
+#Binary matrix
+B <- DF %>%
+  select(CustomerNo, CategoryName) %>%
+  distinct() %>%
+  mutate(value = 1) %>%
+  spread(CategoryName, value, fill = 0)
+
+# henda út signla transactions
+RS <- (rowSums(B[,2:ncol(B)]))>1
+
+B <- B[RS,]
+G <- G[RS,]
+
+#Convert to transactions and sparce matrix
+data <- as(as.matrix(B[, -1]), 'transactions')
+
+data4 <- as(t(as.matrix(G[, -1])), 'dgCMatrix') # bilta
+
+#Initialize variables
+Result3 <- list()
+
+#Mine for Frequent itemsets
+#muna í ritgerð og vörn það þarf að establisha einhverju basepoint, ítra niður að tilteknu supporti (brute force)
+
+e <- eclat(data, parameter = list(support = .03, minlen=1, tidLists = TRUE))
+
+#Sparse matrices lines are columns and vice versa
+P <- data@data
+
+
+#Initialize variables
+supp <- as.vector(unlist(e@quality))
+results <- list();
+results2 <- list();
+results3 <- list();
+lengd <- nrow(e@quality)
+
+ptm <- proc.time()
+#Profit Allocation loop 30 simulations from pseudocode
+data@data <- P
+M3 <- vector(mode="numeric", length=length(supp))
+NP3 <- vector("numeric",nrow(e@items))
+afgangur <- 0
+afgangur2 <- 0
+
+
+
+
+
+#####################
+if(T){
+Max <- function(x){max(0,which.max(x))}
+
+data@data <- P
+
+itemRuleProb  <-  e@tidLists@data*as.vector(unlist(e@quality))
+itemRuleProb[rowSums(itemRuleProb)>0,]  <- itemRuleProb[rowSums(itemRuleProb)>0,]/rowSums(itemRuleProb[rowSums(itemRuleProb)>0,])
+
+drulluskita <- as.matrix(G[,-1]) %*% (as.matrix(e@items@data)*1)
+
+
+itemRuleProbScaled <- drulluskita*itemRuleProb
+#itemRuleProbScaled <- drulluskitaas.matrix(itemRuleProb>0)*1
+
+
+whichRule <- integer(nrow(itemRuleProb))
+
+whichRule[rowSums(itemRuleProbScaled)>0] <- apply(itemRuleProbScaled[rowSums(itemRuleProbScaled)>0,], 1, Max)
+Rprice    <- vector(mode="numeric",length=nrow(G))
+
+pjasa <- cbind("what"=(1:nrow(G)),"regla"=whichRule)
+pjasa2 <- pjasa[pjasa[,2]!=0,]
+
+Rprice[pjasa2[,1]] <- drulluskita[(pjasa2)]
+
+#Rprice[whichRule!=0] <- RuleMean[whichRule[whichRule!=0]]
+
+
+
+
+TID_Price <- rowSums(G[,-1])
+
+R_profit <- as.data.frame(cbind("whichRule"=whichRule,"NP4"=TID_Price,"Rprofit"=Rprice))
+
+# accept <- function(x){x*2*exp(-x/300000)}
+accept <- function(x){x*2.1}
+
+R_profit$acc <- accept(R_profit$Rprofit)
+
+R_profit$TF <- R_profit$NP4<R_profit$acc
+
+R_profit$TF <- R_profit$TF*1
+
+R_profit$total <- R_profit$NP4*(R_profit$TF*1) + R_profit$Rprofit*(!R_profit$TF*1) 
+
+#R_profit <- R_profit[R_profit$whichRule!=0,]
+
+
+
+CROSS <- R_profit %>% 
+  group_by(whichRule) %>% 
+  summarise_each(funs(sum))
+
+
+CROSS2 <- CROSS[-1,]
+
+
+
+NP3 <- CROSS2$Rprofit
+NP <- CROSS2$Rprofit
+
+M3 <- CROSS2$total
+
+Result3$frame1$M3 <- M3
+
+
+
+#CROSS <- CROSS[order(CROSS$whichRule),]
+
+
+
+# improvement <- as.vector(RuleMean)
+# 
+# improvement[as.vector(CROSS$whichRule)] <- as.vector(CROSS$total)
+# 
+# CrossSelling <- as.data.frame(cbind("Base"=as.vector(RuleMean),"Cross"=improvement))
+# 
+# CrossSelling$increase <- (CrossSelling$Cross)/CrossSelling$Base 
+# 
+# CrossSelling$increase <- CrossSelling[order(CrossSelling$increase),]
+
+
+
+
+
+
+}
+
+#####################
+
+
+# afgangur
+# sum(NP3)
+# sum(G[,-1])
+# sum(NP3)+afgangur
+# afgangur2
+# sum(M3)
+# sum(M3)+afgangur2
+# 
+# 
+# sum(NP3)/sum(G[,-1])
+# sum(M3)/sum(G[,-1])
+# sum(R_profit$total)/sum(G[,-1])
+# 
+# 
+# pulsa <- M3/NP3
+
+
+sEOG3<-paste("frame", 1, sep="")
+runResults3 <- as.data.frame(cbind(inspect(e),M3))
+Result3[[sEOG3]] <- runResults3
+
+
+
+#######################
+#      Category       #
+#######################
+SIZE <- size(e@items)
+COLS <- length(size(e@items))
+ROWS <- sum(size(e@items))
+#initialize constraint matrix
+constraintM <- matrix(nrow = ROWS, ncol = COLS, dimnames = list(c(rep("Row",ROWS)),
+                                                               c(rep("Cols",COLS))))
+r <- 1
+for(i in 1: COLS){
+    for(j in 1:SIZE[i]){
+    Rname <- df.sample$GroupName[which.max(df.sample$CategoryName == as(e@items,"list")[[i]][j])]
+    Rname2 <- trimws(as.character(Rname), which = c("both", "left", "right"))
+    dimnames(constraintM)[[1]][r] <- Rname2
+    dimnames(constraintM)[[2]][i] <-paste0("subSet",i)
+    constraintM[r,i] <- 1
+    r <- r + 1
+    }
+}
+constraintM[is.na(constraintM)] <- 0
+#collapse duplicate rows
+CM <- t(sapply(by(constraintM,rownames(constraintM),colSums),identity))
+C <- rbind("SIZE" = size(e@items),CM)
+Indexes <- which(C!=0,arr.ind = T,useNames = F)
+SC <- as(C,"dgCMatrix")
+
+#######################
+#     Optimization    #
+#######################
+
+# preparing the model
+lp <- glpkAPI::initProbGLPK()
+gap = 1e-4
+# model data
+# nrows <- 1
+# ncols <- length(Result$frame1$M)
+nrows <- SC@Dim[1]
+ncols <- SC@Dim[2]
+
+# constraint matrix construction
+#ne <- length(Result$frame1$M)
+ne <- length(SC@x)
+#lines
+#ia <- c(rep(1,length(Result$frame1$M)))
+ia <- as.vector(Indexes[,1])
+#columns
+#ja <- c(1:length(Result$frame1$M))
+ja <- as.vector(Indexes[,2])
+#values of constrint matrix
+#ar <- size(e@items)
+ar <- as.vector(SC@x)
+
+# objective function nota núna Result3 með logariðmísku vörpuninni
+obj <- Result3$frame1$M3
+
+
+# upper and lower bounds of the rows
+rlower <- c(0,rep(rep(0,(nrows-1))))
+numberOfGroups <- nrow(SC)
+rupper <- c(numberOfGroups,rep(1,(nrows-1)))
+# upper and lower bounds of the columns, non at tha moment
+clower <- c(rep(0,length(Result3$frame1$M3)))
+cupper <- clower
+# direction of optimization
+glpkAPI::setObjDirGLPK(lp, GLP_MAX)
+# add rows and columns
+glpkAPI::addRowsGLPK(lp, nrows)
+glpkAPI::addColsGLPK(lp, ncols)
+#lower bound columns
+type <- rep(GLP_LO, length(Result3$frame1$M3))
+#setColBndGLPK(lp, c(1:ncols), clower, cupper, obj)
+glpkAPI::setColsBndsObjCoefsGLPK(lp, c(1:ncols), clower, cupper, obj, type)
+glpkAPI::setRowsBndsGLPK(lp, c(1:nrows), rlower, rupper)
+#Set variable types, this case it is binary
+for(j in 1:ncols){
+  glpkAPI::setColKindGLPK(lp,j,GLP_BV)
+}
+# load constraint matrix
+glpkAPI::loadMatrixGLPK(lp, ne, ia, ja, ar)
+# solve Binary Variable problem, 1 relaxed problem
+glpkAPI::setMIPParmGLPK(PRESOLVE, GLP_ON)
+glpkAPI::setMIPParmGLPK(MSG_LEV, GLP_MSG_ALL)
+glpkAPI::setMIPParmGLPK(MIP_GAP , gap)
+glpkAPI::solveMIPGLPK(lp)
+# retrieve the results
+glpkAPI::mipColsValGLPK(lp)
+glpkAPI::mipObjValGLPK(lp)
+#
+optimal <- as.character(as.logical(mipColsValGLPK(lp)))
+glpkAPI::delProbGLPK(lp)
+
+```
+
+\FloatBarrier
+
+#Introduction
+
+\pagenumbering{arabic}
+\setlength{\parindent}{4em}
+\setlength{\parskip}{1em}
+\setstretch{1.5}
+\captionsetup[table]{font={stretch=1.5}}    \captionsetup[figure]{font={stretch=1.0}}
+\renewcommand{\floatpagefraction}{.9}
+
+\FloatBarrier
+
+## Backround and literature review
+
+From the introduction of the first electronic payment terminals by Visa in 1979 (Estep, 2006) to the more recent cloud-based Point-of-sale (POS) systems, the amount of sales data from retail stores has vastly increased. As an example, the retail corporation Walmart has collected historical sales data using data warehousing since 1990 (Wailgum, 2007). POS data and information from loyalty cards issued by retailers can provide valuable insights into various parts of the retailing operations. By using data mining methods, retail companies have been able to analyze large datasets and get a better understanding of their business through customer segmentation, market basket analysis, prediction of churn and other applications of data mining and machine learning methods.
+
+\FloatBarrier
+
+### Market Basket Analysis
+
+Basket analysis (Association rule learning) is used to discover relationships between products in a large database of transactional data. These relationships can then used to aid in predicting customers future shopping intent, potential cross-sell, product assortment and other vital retail management decisions. In 1993 the paper “Mining Association Rules between Sets of Items in Large Databases” \cite{Agrawal1993} the general concept of association rule learning was proposed. However due to exponential behavior in execution time further improvement were needed to make association rule learning sensible in practical empirical examples. This improvement was proposed with the Apriori algorithm which was first introduced in 1994 in the paper “Fast Algorithm for Mining Association Rules” \cite{apriori}. In this paper a new approach is taken to producing rule-sets which scales linearly with database size both in respect of number of transactions and number of product offered by the retailer. Still today this algorithm provides the foundation for many models in market basket analysis. As stated in the 1994 paper one of the things to consider is the fact that the resulting association rules discovered by the algorithm are based on frequency of product occurrence in the transactions and does not take into account the potential profit margins made from the rules established. That algorithm therefor does not qualify the “usefulness” nor the “interestingness” of discovered rules. This means that there needs to be a human interaction in the loop to validate the rule sets.
+
+the following defenitions are some consepts that will be refered to though out the paper and form the basis for basket analysis.
+
+\FloatBarrier
+
+#### Rule
+
+A rule refers to one event leading to another. In association rule learing these events are pucases of items. Each rule has a left-hans-side (LHS) sometimes called *antecendent* and a right-hand-side (RHS) sometimes called *consiquent*
+
+\begin{equation} \label{confidence}
+X \Rightarrow Y
+\end{equation}
+
+A very simple rule at an electronics retailer might for example be $\{TV,Audio System\} \Rightarrow \{Audio Cable\}$. In other word if a customer has Both a TV and Audio system in his basket it will lead to a purchase of an audio cable.
+
+
+\FloatBarrier
+
+#### Support
+
+Support is tha measurment of how frequnetly an item or set of items apper in the transactionl database
+
+\begin{equation} \label{support}
+supp(X) = \frac{|\{ t \in T;X \subseteq t \}|}{|T|}
+\end{equation}
+
+
+```{r itemfrequency, echo=F,fig.cap=list("Item Support plot"),fig.align='left',results="hide",fig.height=4}
+
+############################################################
+#
+#               Item Frequency and TID
+#
+############################################################
+
+dfi <- res[,c("CustomerNo","CategoryName")]
+dfi <- dfi[(dfi$CustomerNo %in% sample(dfi$CustomerNo,size=10000)),]
+dfi <- dfi %>%
+  select(CustomerNo, CategoryName) %>%
+  distinct() %>%
+  mutate(value = 1) %>%
+  spread(CategoryName, value, fill = 0)
+
+# Reikningar fyrir Frequencyplot
+FQ <- as.data.frame(table(unlist(res$CategoryName)))
+colnames(FQ)[1] <- "CategoryName"
+FQ$Freq <- FQ$Freq/nrow(res)
+FQ <- FQ[order(-FQ$Freq),]
+FQ2 <- FQ[c(1:10),]
+
+
+FQ2$CategoryName <- trimws(sapply(as(FQ2$CategoryName,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+FQ2$CategoryName <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", FQ2$CategoryName, perl=TRUE)
+
+
+colfunc2 <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(10)
+#ASC Order
+FQ2$CategoryName <- factor(FQ2$CategoryName, levels = FQ2$CategoryName[order(-FQ2$Freq)])
+
+ggplot(FQ2, aes(x = CategoryName,y = Freq,fill=CategoryName)) + geom_bar(stat = "identity",col="black") +
+  theme_bw()+
+  scale_fill_manual(values=colfunc2) +
+  MTheme + 
+  ggtitle("Item Support Plot Top-10") +
+  labs(x="Item") +
+  labs(y="Support")+
+  theme(legend.position="none")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+\FloatBarrier
+
+#### Confidence
+
+Confidence is the measurment of how frequnetly an association rule is found to be true, in other word, of all the baskets containing X how many af those baskets include the item Y
+
+\begin{equation} \label{confidence}
+Conf(X \Rightarrow Y) = \frac{Supp(X \cup Y)}{Supp(X)}
+\end{equation}
+
+Althog the equation is simple it is very usefull in product reccomandation for example in online shoppin, where the customer has selected a producet we are able to suggdjest other complementary products based on the confidence value. the reader might be familliar with the term "customer who bought this product also bought this"
+
+\FloatBarrier
+
+#### Lift
+
+Lift is a very basik meashurment of increas in liklyhood of the basket containing Y if it already contains X. if the Lift number is 1 or less the items are independant of each other. This therefor is a very basik meashure of "usufullness" or "interest" of rules. þthere are many graphical methods to display results from basket analysis. One of them is ploting up a network of hwo the items in the store are linked togather with respect to supprt and lift numbers, this is demonstraded in Fig.\ref{fig:spider}. However these graphs can becom extreamly complekaded to read with large number of items and a low threashold for support and Lift.
+
+\begin{equation} \label{lift}
+Lift(X \Rightarrow Y) = \frac{Supp(X \cup Y)}{Supp(X) \times Supp(X)}
+\end{equation}
+
+
+```{r spider, echo=F,fig.cap=list("Item Support and Lift graph"),fig.align='center',results="hide",fig.height=5}
+
+############################################################
+#
+#               Item Frequency and TID
+#
+############################################################
+
+plebbi <- as(as.matrix(dfi[, -1]), 'transactions')
+windowsFonts(Times=windowsFont("Times New Roman"))
+options(warn=-1)
+opar <- par()
+
+suppressPackageStartupMessages(require(arulesViz))
+litur <- colorRampPalette(c("lightsteelblue1", "lightsteelblue4"))(10)
+#Left <- as.factor(e@items@itemInfo$labels[e@items@data[,order(-(percentage))[3]]])
+
+rules_sales1 <- apriori(plebbi, parameter=list(support =0.06, confidence =0.5, minlen=2))
+
+rules_sales1@lhs@itemInfo$labels  <- trimws(sapply(as(rules_sales1@lhs@itemInfo$labels,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+rules_sales1@lhs@itemInfo$labels  <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", rules_sales1@lhs@itemInfo$labels, perl=TRUE)
+
+rules_sales1@rhs@itemInfo$labels  <- trimws(sapply(as(rules_sales1@rhs@itemInfo$labels,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+rules_sales1@rhs@itemInfo$labels  <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", rules_sales1@rhs@itemInfo$labels, perl=TRUE)
+
+
+par(family="Times")
+#AAA <- plot(rules_sales1, method='grouped',control=list(col=litur,k=5,rhs_max=5,lhs_items=1,main="Support and Lift Matrix"))
+#plot(AAA)
+plot(rules_sales1, method='graph',control=list(type='items',nodeCol=litur,alpha=0.9),main="Cross Selling Network")
+par(opar)  
+options(warn=0)
+
+```
+
+
+
+\FloatBarrier
+
+
+skrifa um kosti og galla basket analysis
+
+ \begin{itemize}
+   \item  Pros
+   \begin{itemize}
+     \item  Results are easly enterprited
+   \end{itemize}
+   \begin{itemize}
+     \item  Can give good insight to customer purchasing behavior
+   \end{itemize}
+ \end{itemize}
+ 
+  \begin{itemize}
+   \item  Cons
+   \begin{itemize}
+     \item  Does not take into account profit margins from the discovered associations
+   \end{itemize}
+   \begin{itemize}
+     \item  Results can be overvelming if done on itemlevel
+   \end{itemize}
+   \begin{itemize}
+     \item  Results can be stating some obvious associations well known to the retailer
+   \end{itemize}   
+ \end{itemize}
+
+\FloatBarrier
+
+
+### Other Methods
+
+Many other exhiting methods related to market basket analysis excists
+
+\FloatBarrier
+
+
+## Objectives
+
+Various papers have been written on the topic of “usefulness” and “interestingness” of rule-sets in attempt to draw stronger conclusions from basket analysis and in return reduce the human input needed in the loop which often can be subjective. These two metrics can prove very useful when determining product assortment and advertising campaigns. As we saw in tha chapter above the basik consepts of basket analysis does not take into account the revenues generated from various results from tha analysis. The objective in this project is to explore what has been done in regard revenue(profit). The aim of this studdy is to focus on extract Items on the LHS of rules with the highest profit potetial with respect to cross sell. By focusing on this topic we belive that tha results from the study will not only be usefull when it comes to campaigns and product assortment but can give vital information when it comes to other management decissions like replanishment programs and which Items(products) are sutable for discontionuation without having effects on sales of the remaining products in the store. 
+
+skrifa almennt um basket analaysis með einni ljótri mynd af splúndraðari búð Fig.\ref{fig:itemfrequency}
+
+\FloatBarrier
+
+## Thesis layout
+
+The thesis layout follows the conventional IMRaD orginazation structure known in scientific writing. The following chapters after the introduction wil be broken down in tha following manner. Chapter 2 methods will start by giving detailed introduction to the data used in the project. From the data introduction we will have a good insight into to what the data has to offer and its limitations. The later part of Chapter 2 will be focused on the analytics methods used in the study. Chapter 3 will cover the adequate results from the project and therafter follows Chapert 4 where we will descuss room for improvement on tha model precented in the study.  
+
+\FloatBarrier
+
+#Methods
+
+\FloatBarrier
+
+## Data and Pre-processing
+
+\FloatBarrier
+
+### Store Hierarchy
+
+To be able to do any data analysis it is essential to have a good understanding of the structur behind the data. In tha retail industry it is a common practice to brake the store down into managable sections. These sections of the store have products aggregated together with similar attributes. These sections are than grouped together to various levels of sections and subsections. Depending on the store size and productrange the levels can varie in botn number and size. Precent in the electronics retailer in this study are three levels, at the bottom level are indivitual item sold in tha store. these items then belong to a Item-category of similar attributes. Those Item-categories the belong to a Item-group, these item groups aggregate togather categories of similarities. A simple diagram of this store hierachy can be seen in Fig.\ref{fig:marker} to get a good understangi of what data we have in hand. Fig.\ref{fig:marker} only show a simplification of the store with two Item-groups, four Item-categories and eight items. The store has however more than 20000 indivital Items, over 400 Item-Categories and around 160 Item-Groups.
+
+\begin{figure}
+\definecolor{steeleblue}{RGB}{202,225,255}
+\begin{forest}
+ forked edges,
+  for tree={
+    if level=0{align=center}{% allow multi-line text and set alignment
+        align={@{}C{11mm}@{}},
+     },
+    draw=black,
+    fill=steeleblue,
+    minimum height=8ex,
+    edge={-Latex},
+    text centered,
+    font=\scriptsize,
+    rounded corners
+  }
+   [{Store}, align=center, name=S
+	[{LCD\\TV}, name=SS
+  		[{22" \\LCD\\TV}, name=PDC
+    			[{22" \\LG}, name=MS]
+    			[{22" \\Samsung}]
+ 	 	]
+  		[{55" \\LCD\\TV}
+   			[{55" \\ LG}]
+   			[{55"\\Sony}]
+  		]
+	]
+	[{Cell\\Phone}, name=SS2
+  		[{Smart \\Phone}, name=PDC2
+    			[{4" \\Iphone}, name=MS2]
+    			[{4" \\Samsung}]
+  		]
+  		[{GSM \\Phone}
+   			[{Nokia\\ 3210}]
+   			[{Ericson\\A1018}]
+  		]
+	]
+]
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west) {\textbf{Level 3}\\Items\\i=1...20000};
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west|-PDC) {\textbf{Level 2}\\ Item-Category\\m=1...410};
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west|-SS) {\textbf{Level 1}\\Item-Group\\n=1...161};    
+\end{forest}
+    \caption{The Product Hierarchy precent at the electronics retailer}
+    \label{fig:marker}
+\end{figure}
+
+\FloatBarrier
+
+### Relational model
+
+The POS system present at the checkout sends raw data from each transaction to be stored in a data warehouse. For this project we were supplied with data from this database spanning over a two year period dating from december 2016 and back two years. This data was transfered to a local server that we were able querie during the devlepement phase of the project. The data is structured in a convensional tabular manner known in sequel server databases like MYSQL[cite], microsoft ACCSSES[cite]. To extract data from this database we had to construct a relation model as seen in Fig.\ref{fig:schema} with all the appropriate key´s to join tha tables. since all the doevelopent was to taka place *R* \cite{Rprograming} we esablished a live connection from *R* directly to the database through the RODBC[cite] package. 
+
+```{r schema, echo=F,eval=T,results='asis',fig.cap=" Relational model of tha database used",fig.align='center',fig.height=4}
+knitr::include_graphics("export4.pdf")
+```
+
+\FloatBarrier
+
+When aggregating data from tha database we have a lot of flexability. For example we can query the server and extract all the indivitual POS transactions grouped by there transaction ID´s or on the cutomer ID´s. By taking a look at \ref{fig:Basketsize} we can se the basketsize of tha two scenarios. One obvious thing we can see is that when we only group by the transaction ID over 65% of the transaction include only one item which is far from optimal when it comes to frequent itemset mining. luckily we are able to group by customer ID due to the membership(loyalty) program present at the retailer \ref{fig:Basketsize} left. By grouping the data on Customer ID we can see a drastic change in basket size vital to the analysis in later steps in the project. 
+
+
+```{r Basketsize, echo=F,fig.width=7, fig.height=3.5,fig.cap=list("Basket size when grouping by Transaction ID and customer ID"),fig.align='center'}
+
+colfunc3 <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(6)
+
+dfa <- res[,c("TransactionNo","GroupName")]
+
+
+dfa <- dfa %>%
+  select(TransactionNo, GroupName) %>%
+  distinct() %>%
+  mutate(value = 1) %>%
+  spread(GroupName, value, fill = 0)
+
+itemMatrix1 <- as(as.matrix(dfa[, -1]), 'transactions')
+
+s <- 6
+a <- summary(itemMatrix1)
+y <- as.vector((a@lengths[1:s])/a@Dim[1])
+x <- c(1:s)
+df1 <- data.frame(x,y)
+
+
+
+
+xx <- ggplot(df1, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity",col="black") +
+  scale_fill_manual(values = colfunc3) +
+  theme_bw()+
+  MTheme +
+  ggtitle("Basket Size Based on Transaction ID") +
+  labs(x="Basket Size") +
+  labs(y="Percentage Of Transactions")+
+  theme(legend.position="none")
+
+dfj <- res[,c("CustomerNo","GroupName")]
+
+
+dfj <- dfj %>%
+  select(CustomerNo, GroupName) %>%
+  distinct() %>%
+  mutate(value = 1) %>%
+  spread(GroupName, value, fill = 0)
+
+itemMatrix2 <- as(as.matrix(dfj[, -1]), 'transactions')
+
+s <- 6
+a <- summary(itemMatrix2)
+y <- as.vector((a@lengths[1:s])/a@Dim[1])
+x <- c(1:s)
+df2 <- data.frame(x,y)
+
+yy <- ggplot(df2, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity",col="black") +
+  scale_fill_manual(values = colfunc3) +
+  theme_bw()+
+  MTheme +
+  ggtitle("Basket Size Based on Customer ID") +
+  labs(x="Basket Size") +
+  labs(y="Percentage Of Transactions")+
+  theme(legend.position="none")
+
+multiplot(xx,yy,cols = 2)
+```
+
+
+\FloatBarrier
+
+### Deleting data
+
+Some parts of tha data can be removed manually from tha dataset to increas the strengt of the signal we are serching after. some are more obvious than other for example if we look back at \ref{ref:Basketsize} we see that a large portion of tha data still consists of the "single visit single item" shopping pattern. Baskets containing these single items do not have a significant value to tha objective of identifieng items of high potential of cross-sell since those transactions only contain single items. if we look at \ref{fig:schema} we can se that tha retailer keeps track on the type of customer taking part in each transaction. However some of tha transactions are not a part of there loalty program and therefor can not be aggregatet to produce a customer transaction history and therefor are not usefull for the modeling done in this studdy. Other noizy transactiona can be spotted without using any advansed filtering like extreamly large transactions containing a high niber of items. These transations are often due to companies buying large quantites for gifts and other purpuses but do not reflect the average shopper of the retailer in question.  
+
+\FloatBarrier
+
+### Centering and scaling
+
+One of the things that need to be considdered when doing any data anlysis is the need for scaling. When dealing whith conventional supermarket data the need for scaling might not be that highly relevent since the variance of prices between categories is relatively low. however in our case we have a large price difference between categories, varying from low priced DVD´s to expensive LCD TV´s. This difference might lead to some abnormal cross selling potential of Items. A part of this study is to investigate if there is need for scaling og transforming the data. Eq.$\eqref{norm}$ is the well known standard Normalization. As the as this normalization centers tha data around zere we will see prices with negative value, these negative prices. 
+
+\begin{equation} \label{norm}
+X' = \frac{X - \mu_{category_{i}}}{\sigma_{category_{i}}}
+\end{equation}
+
+\FloatBarrier
+
+### Transformation
+
+Transformation is a nother option we have in regards of data preprocessing. the benefits of using log-transformation is that we do not get any negative prices but reduce skewness in the data. Althog these methods might not yeild different results it would...
+
+```{r logtransHDMI, echo=F,fig.cap=list("Log transformation of the prices of HDMI cables and LCD TV over 50-inches"),fig.align='center'}
+
+############################################################
+#
+#              log Transformation HDMI and TV
+#
+############################################################
+
+if(heima==F){
+load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA2.Rda")
+} else{
+load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA2.Rda");    
+  }
+
+# Reikningar fyrir Frequencyplot
+FQ <- as.data.frame(table(unlist(res$CategoryName)))
+colnames(FQ)[1] <- "CategoryName"
+FQ$Freq <- FQ$Freq/nrow(res)
+FQ <- FQ[order(-FQ$Freq),]
+
+#HDMI
+hplot1 <- data.frame("verd"=(na.omit(res2$NetProfit2[res2$CategoryName==FQ$CategoryName[12]])))
+hplot2 <- data.frame("verd"=log(na.omit(res2$NetProfit2[res2$CategoryName==FQ$CategoryName[12]])))
+
+#TV
+hplot3 <- data.frame("verd"=(na.omit(res2$NetProfit2[res2$CategoryName==FQ$CategoryName[67]])))
+hplot4 <- data.frame("verd"=log(na.omit(res2$NetProfit2[res2$CategoryName==FQ$CategoryName[67]])))
+
+ 
+
+
+a1 <- ggplot(data=hplot1, aes(hplot1$verd)) + 
+  geom_histogram(breaks=seq(min(hplot1$verd), max(hplot1$verd), by = 400), 
+                 col="black", 
+                 fill="lightsteelblue1", 
+                 alpha = 1) + 
+  theme_bw()+
+  labs(title="Raw prices of HDMI-cables") +
+  labs(x="price", y="Count")+
+  MTheme
+
+a2 <- ggplot(data=hplot2, aes(hplot2$verd)) + 
+  geom_histogram(breaks=seq(min(hplot2$verd), max(hplot2$verd), by = 0.25), 
+                 col="black", 
+                 fill="lightsteelblue3", 
+                 alpha = 1) + 
+  theme_bw()+
+  labs(title="Log-transformed (HDMI-cables)") +
+  labs(x="Log(price)", y="Count")+
+  MTheme
+
+a3 <- ggplot(data=hplot3, aes(hplot3$verd)) + 
+  geom_histogram(breaks=seq(min(hplot3$verd), max(hplot3$verd), by = 20000), 
+                 col="black", 
+                 fill="lightsteelblue1", 
+                 alpha = 1) + 
+  theme_bw()+
+  labs(title="Raw prices of 53-inch TV's") +
+  labs(x="price", y="Count")+
+  MTheme
+
+a4 <- ggplot(data=hplot4, aes(hplot4$verd)) + 
+  geom_histogram(breaks=seq(min(hplot4$verd), max(hplot4$verd), by = 0.25), 
+                 col="black", 
+                 fill="lightsteelblue3", 
+                 alpha = 1) + 
+  theme_bw()+
+  labs(title="Log-transformed (53-inch TV's)") +
+  labs(x="Log(price)", y="Count")+
+  MTheme
+
+
+multiplot(a1,a2,a3,a4,cols = 2)
+
+rm(res2)
+```
+
+\FloatBarrier
+
+### Translation
+
+\par The database in this project was in icelandic language and we needed to translate parts of the database into english. This provided a good opertunity to connect R to the available Google Application programming interfaces (API´s)[cite]. Aswell as translation API´s Google offers a large variety API´s on machine learning and analytics which can be usefull to be able to connect to when doing large scale analytics aswell as simply reducing developement time by using "of the shelf" soulutions. the binding to Google was established using the translate \cite{Translate} package in R which takes strings of data from the local R enviroment sends to Google API services and returns the strings in the translated language of choice.
+
+## Frequent Item set mining
+
+\FloatBarrier
+
+### Apriori
+
+For this part og the project a R package called arules will be used. This package provides an interface to the *C* implementation of the of tha association mining algorithms Apriori and Eclat by C.Borgelt[sitation]. The Eclat performs slightly better than Apriori when mining for frequent item-sets in this particular application. For this reason it was used to mine for frequent item sets. The results from the *C* interface are delivered to the R environment as a large sparse matrix which can be used for further analysis like the PROFSET model 
+
+\FloatBarrier
+
+### Eclat
+
+skrifa stutt um eclat \cite{Eclatt}
+
+\FloatBarrier
+
+### Data sampling
+
+\FloatBarrier
+
+## PROFSET
+
+The heart of the model in ower project will by based on the PROFSET\cite{brijs}\cite{brijs1}\cite{brijs2}\cite{brijs3} (PROFitable-itemSET) model. This model appears in various applications ranging from small Automated convenience store to supermarkets.
+
+In 2000 the paper “A Data Mining Framework for Optimal Product Selection in Supermarked Data”\cite{brijs} the very interesting variation PROFSET model was proposed with an empirical study on a data from a Belgian grocery supermarket. We belive tha this variation is best suted to base on as it hase some similarity whit tha date supplied by ower electronics retailer. The objective of the PROFSET model is generate a hit-list of products with a user defined size. This hit-list includes the products that will produce the highest profit taking in to account potential cross-sell and profit margin of each rule-set. The general working of the model is a three step process where the first step is to scanned the database for frequent itemsets,the second step is where profit is allocated to the discovered itemsets and in the final step an binary optimization model is generated to find the optimal itemsets in regars of revenues generated. The following subchapters will give detail explanation of the steps involved in the model. A flow diagram of the stepwice process is diplayes in Fig.\ref{fig:PROFSETflow} bellow.
+
+\begin{figure}[H]
+\definecolor{steeleblue}{RGB}{202,225,255}
+\centering
+\begin{forest}
+  forked edges,
+  for tree={
+    if level=0{align=center}{% allow multi-line text and set alignment
+        align={@{}C{13mm}@{}},
+    },
+    draw=black,
+    fill=steeleblue,
+    minimum height=8ex,
+    edge={-Latex},
+    text centered,
+    font=\footnotesize,
+    grow'=0,
+    align=c,
+    rounded corners
+  },
+  highlight/.style={
+    thick
+  }
+  [{Discover Frequent Item-sets}
+    [\textbf{Profit Allocation}, highlight
+      [\textbf{Optimization Filtering}, highlight
+      ]
+    ]
+  ]
+\end{forest}
+\caption{Flow diagram of PROFSET}
+\label{fig:PROFSETflow}
+\end{figure}
+ 
+\FloatBarrier
+ 
+### Sales margins
+
+The gross sales margin from each transaction are evaluated with Eq.$\eqref{transprofit}$. This is just a simple sum over the transaction where the total profit is a *sum product* of the difference in sales price (*SP*) and purchase (*PP*) price of each item multiplied with the quantity $(f_i)$ in the transactions $T_{j}$.
+
+\begin{equation} \label{transprofit}
+m(x) = \sum_{T_{j}} (SP_i - PP_i) \cdot f_i
+\end{equation}
+
+Sales margins are then allocated to the correct frequent itemset in the transaction as described in the steps bellowin in subsection \ref{sssec:num1}.
+
+\FloatBarrier
+
+### Item-set Probability distribution
+
+When it comes to detemining the customers shopping intent we will come accross transactions ($T_{j}$) containg multible frequent itemsets. If any of these itemsets is a superset of the other subsets it is called *maximal* and the assumtion is made that the customer indeed intended to buy that superset and the total profit is allocated to that superset according to eq.$\eqref{transprofit}$. However when there is no such single maximal itemset but more than one imeset we need to determine which of the itemsets the customer intended to buy gets the profit from transaction $T_{j}$. For this we will use the probability distribution $\Theta_{T_{j}}(X_{max})$.A single $X_{max}$ will be drawn from eq.$\eqref{Mdist}$ and allocated the profit.
+
+\begin{equation} \label{Mdist}
+\Theta_{T_{j}}(X_{max}) = \frac{support(X_{max})}{\sum_{Y_{max} \in T_{j}} support(Y_{max})}
+\end{equation}
+
+This equation simply normalizes the support of all the frequent itemsets in the transaction to the scale 0-1. Fig.\ref{fig:suppnorml} demonstrates this nomarlization of support for a transaction containing fore items $\{A,B,C,D\}$ and items $\{A,B,C\}$ are frequent itemsets with there support of $\{0.05,0.06,0.01\}$. The sample is drawn from the distribution on the right in Fig.\ref{fig:suppnorml}. The drawback of using this method to decide which item the customes intended to buy is that for itemsets with low support will not be likley to be drawn from the sample distribution. The problem is furthermore inkreased when we consider tha fact the low support itemsets do not ocurre in many transaction so we get few chances to even out errors from sampling with high number of transaction to sample from. This will lead to unstable results for itemsets with a low support number. we will adress this problim in subsection \ref{sssec:maxcon}.
+
+```{r suppnorml, echo=F,fig.width=7, fig.height=3.5,fig.cap=list("Example of the Item-Distribution for a transaction containing three frequent itemsets(products)"),fig.align='center'}
+
+colfunc3 <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(3)
+
+
+df1 <- as.data.frame(cbind("x"=c("A","B","C"),"y"=c(0.05,0.06,0.01)))
+df2 <- as.data.frame(cbind("x"=c("A","B","C"),"y"=c(0.42,0.5,0.08)))
+
+xx <- ggplot(df1, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity",col="black") +
+  scale_fill_manual(values = colfunc3) +
+  theme_bw()+
+  MTheme +
+  ggtitle("Support of items A,B,C") +
+  labs(x="Item") +
+  labs(y="Support")+
+  theme(legend.position="none")
+
+yy <- ggplot(df2, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity",col="black") +
+  scale_fill_manual(values = colfunc3) +
+  theme_bw()+
+  MTheme +
+  ggtitle("Normalized Probability of A,B,C") +
+  labs(x="Item") +
+  labs(y="Normalized Probability")+
+  theme(legend.position="none")
+
+multiplot(xx,yy,cols = 2)
+```
+
+
+\FloatBarrier
+
+### Profit allocation
+\label{sssec:num1}
+
+removing itemsets....
+
+Having established these two essential equations we can build a pseudocode to do the actual allocation of profit. This code is based on the one introduced in paper mentions above but further extended to be implemented in the programing language R.
+
+\begin{algorithm}[H]
+ \KwData{All transactions and frequent Item-sets}
+ \KwResult{price allocated to each frequent Item-set}
+ initialization $M(X) := 0$\;
+\For{every transaction $T_{j}$}{
+ \While{$T_{j}$ contains frequent Item-set}{
+    Calculate m(x) with Eq.$\eqref{transprofit}$\;
+    \uIf{$count(X_{max})>1$}{
+      Generate probability distribution $\Theta_{T_{j}}$ with Eq.$\eqref{Mdist}$\;
+      Draw $X_{max}$ from $\Theta_{T_{j}}$\;
+      $M(X_{max}) := M(X_{max}) + m(x)$\;
+      $T_{j} := T_{j} \setminus X$\;
+    }
+    \uElseIf{$count(X_{max})=1$}{
+      $M(X_{max}) := M(X_{max}) + m(x)$\;
+      $T_{j} := T_{j} \setminus X$\;
+      Brake: continue to next transaction\;
+    }
+ }
+}
+
+
+\Return{all M(X)}
+\caption{Profset profit allocation}
+\end{algorithm}
+
+\FloatBarrier
+
+### Optimization Model
+
+*muna tala um item max á grúppur erum einu leveli fyrir ifan items, breyta C í G fyrir jöfnuna*
+*One flaws of the PROFSET model is the naïve simplification of the “cost of product” related to each product item. This is the cost associated with inventory, handling, re-stocking. The model assumes a fixed cost on each item which rarely is the case in practice.*
+
+The next step of the project is to implement the optimization layer to the resulting list of item-sets from the profit allocation step. This optimization model has the objective to maximize potential revenues from a limitied number of items. whether we are using the results to select items for promotions or assortment whithin the shop we will have some limitations on how meny items whe can choose. for example in a advertisement brouchure we have limeted space for adverticement and it would be optimal to select the products that would yeild the highest expected return on the investment behind the broushure. The same can be said when it comes to selecting items for display whithin the shop where eyecatching shelfspace is a limited quantity. Since the retiler has a large number of categories on offer but yet a small numer of categories might responsible for the largest portion of revenues, if we would only select those items for addverticement we might get a very monotonic campaign of for example  a campaign only containg cellphones. we howerver would be able to constrain the number of items from each categorie, this is done by setting the appropriate *ItemMin* in Eq.\eqref{optimiziation} this item minimum constrains the number of items that can be selectedfrom each item-group . To limit the the total number of Items we need to add another constrain for the *ItemMax* which summes over all the selected categories and groups.  
+
+
+This might seem quite straight forward when looking the results in table.$\ref{tab:tafla1}$. The results are however from a very small sample of the dataset and has a high support threshold. The following optimization model will be used to start development but may change in complexity if needed.
+
+\begin{equation} 
+\label{optimiziation}
+\begin{aligned}
+& \text{Maxmize:} 
+& & \sum_{T_{j}} M(X) \cdot P_X - \sum_{c=1}^{n}\sum_{i \in C_{c}} Cost_{i}  \cdot Q_{i} \\
+& \text{subject to:} 
+& & \sum_{c=1}^{n}\sum_{i \in C_{c}} Q_{i} = ItemMax \\
+& & & \forall C_{c}: \sum_{i \in C_{c}} Q_{i} \geq ItemMin_{C_{c}} \\
+& & & \forall X \in L, \forall i \in X : Q_{i} \geq P_{X} \\
+& & & P_{X},Q_{i} \in \{0,1\}, i=1,...,n
+\end{aligned}
+\end{equation}
+
+All the decission variables in the model are binary but if we taka e look at the objective function in Eq.\eqref{optimization} we have a negative contributor *cost*. This cost is the inventory holding cost of the discovered frequent items. Inventory cost can be broken down into the following cost-cotributors \cite{richardson1995transportation}.
+
+\setstretch{1}
+ \begin{itemize}
+   \item{\textbf{Inventory Holding Cost 25\%-55\%}}
+   \begin{itemize}
+     \item  Cost of Money 6\% - 12\%
+   \end{itemize}
+   \begin{itemize}
+     \item  Taxes 2\% - 6\%
+   \end{itemize}
+   \begin{itemize}
+     \item  Warehouse Expenses 2\% - 5\%
+   \end{itemize}
+   \begin{itemize}
+     \item  Insurance 1\% - 3\%
+   \end{itemize}
+   \begin{itemize}
+     \item  Clerical \& Inventory Control 3\% - 6\%
+   \end{itemize}
+   \begin{itemize}
+     \item  Physical Handling 2\% - 5\%
+   \end{itemize}
+   \begin{itemize}
+     \item  Deterioration \& Pilferage 3\% - 6\%
+   \end{itemize}
+ \end{itemize}
+\setstretch{1.5}
+
+
+This cost is rearly calculated in the industry and it is estamated that only 63% do. How deep down the store hirearcy this cost is estemated varies but rearly is this calculated down to itemlevel. the supplyer of tha data in this project estemates the inventory cost to be around 25%. The model is solved using the branch and cut method \cite{BandC} available in the GlpkAPI \cite{glpkapi} in R.  
+
+\FloatBarrier
+
+#### code (appendex sidar)
+
+The code block below displays the optimization model in *R*. The only difference to the model above is lack of holding-cost of each product. This cost will be added at a later date to the model.
+
+```{r rcode2, echo=F,eval=FALSE}
+#######################
+#      Category       #
+#######################
+SIZE <- size(e@items)
+COLS <- length(size(e@items))
+ROWS <- sum(size(e@items))
+#initialize constraint matrix
+constraintM <- matrix(nrow = ROWS, ncol = COLS, dimnames = list(c(rep("Row",ROWS)),
+                                                               c(rep("Cols",COLS))))
+r <- 1
+for(i in 1: COLS){
+    for(j in 1:SIZE[i]){
+    Rname <- df.sample$GroupName[which.max(df.sample$CategoryName == as(e@items,"list")[[i]][j])]
+    Rname2 <- trimws(as.character(Rname), which = c("both", "left", "right"))
+    dimnames(constraintM)[[1]][r] <- Rname2
+    dimnames(constraintM)[[2]][i] <-paste0("subSet",i)
+    constraintM[r,i] <- 1
+    r <- r + 1
+    }
+}
+constraintM[is.na(constraintM)] <- 0
+CM <- t(sapply(by(constraintM,rownames(constraintM),colSums),identity))
+C <- rbind("SIZE" = size(e@items),CM)
+Indexes <- which(C!=0,arr.ind = T,useNames = F)
+SC <- as(C,"dgCMatrix")
+
+#######################
+#     Optimization    #
+#######################
+
+# preparing the model
+lp <- glpkAPI::initProbGLPK()
+gap = 1e-4
+# model data
+# nrows <- 1
+# ncols <- length(Result$frame1$M)
+nrows <- SC@Dim[1]
+ncols <- SC@Dim[2]
+# constraint matrix construction
+#ne <- length(Result$frame1$M)
+ne <- length(SC@x)
+#lines
+#ia <- c(rep(1,length(Result$frame1$M)))
+ia <- as.vector(Indexes[,1])
+#columns
+#ja <- c(1:length(Result$frame1$M))
+ja <- as.vector(Indexes[,2])
+#values of constrint matrix
+#ar <- size(e@items)
+ar <- as.vector(SC@x)
+# objective function
+obj <- Result$frame1$M
+# upper and lower bounds of the rows
+rlower <- c(0,rep(rep(0,(nrows-1))))
+rupper <- c(6,rep(2,(nrows-1)))
+# upper and lower bounds of the columns, non at tha moment
+clower <- c(rep(0,length(Result$frame1$M)))
+cupper <- clower
+# direction of optimization
+glpkAPI::setObjDirGLPK(lp, GLP_MAX)
+# add rows and columns
+glpkAPI::addRowsGLPK(lp, nrows)
+glpkAPI::addColsGLPK(lp, ncols)
+#lower bound columns
+type <- rep(GLP_LO, length(Result$frame1$M))
+#setColBndGLPK(lp, c(1:ncols), clower, cupper, obj)
+glpkAPI::setColsBndsObjCoefsGLPK(lp, c(1:ncols), clower, cupper, obj, type)
+glpkAPI::setRowsBndsGLPK(lp, c(1:nrows), rlower, rupper)
+#Set variable types, this case it is binary
+for(j in 1:ncols){
+  glpkAPI::setColKindGLPK(lp,j,GLP_BV)
+}
+# load constraint matrix
+glpkAPI::loadMatrixGLPK(lp, ne, ia, ja, ar)
+# solve Binary Variable problem
+glpkAPI::setMIPParmGLPK(PRESOLVE, GLP_ON)
+glpkAPI::setMIPParmGLPK(MSG_LEV, GLP_MSG_ALL)
+glpkAPI::setMIPParmGLPK(MIP_GAP , gap)
+glpkAPI::solveMIPGLPK(lp)
+# retrieve the results
+glpkAPI::mipColsValGLPK(lp)
+glpkAPI::mipObjValGLPK(lp)
+#glpkAPI::delProbGLPK(lp)
+
+optimal <- as.character(as.logical(mipColsValGLPK(lp)))
+```
+
+
+\begin{itemize}
+ \item  Cons
+ \begin{itemize}
+   \item  Cumulative profit allocation beyond total total profit 
+ \end{itemize}
+ \begin{itemize}
+   \item  Does not suite baskets including items with large price variance
+ \end{itemize}
+ \begin{itemize}
+   \item  Unstable results due to low frequency and sampling from eq.$\eqref{Mdist}$
+ \end{itemize} 
+\end{itemize}
+
+these two drawback of the PROFSET algorithm will be addressed in the following subchapter.
+
+
+\FloatBarrier
+
+## Improvements and cutomizations
+
+\FloatBarrier
+
+### Maximum contributor
+\label{sssec:maxcon}
+
+As stated earlier the PROFSET model assumes that tha customers intent was to buy the frequent items precent in each transaction and if tha transaction contains more than one frequent itemset we draw a samle from the itemset distribution. this assumption does not account for the price of that frequent item relative to total price of its transaction. we belive however that the customers intent should be a combination of both the support of the frequent item and the price of the item. Insted of sampling the customers intend we would like to propose to find the maximum contributor to the sum total of each transaction. This is done by finding the maximum of the mutible of the normalized support(for the transaction) and the price of each item as seen in Eq.\eqref{maxcon}.  
+
+\begin{equation} \label{maxcon}
+\begin{aligned}
+MC(T_{j}) & = Max \bigg\{ \frac{support(X_{max})}{\sum_{Y_{max} \in T_{j}} support(Y_{max})} \times Price_{i} \bigg\} \\
+\forall i & \in \{ T_{j}\}
+\end{aligned}
+\end{equation}
+
+This would best be demonstrated by a simple example. lets assum we have a transaction containing two items A and B, both of them have been discovered as frequent items. The price of A and B are $50 and $60. The support for item A is 0.05 and the support for item B is 0.01 so the nomalized support for the items would be 0.83 for A and 0.17 for B. To determine the customers intent we net to calculate $max\{.83 \times 50, 0.17 \times 60\}$  which is 40.5 and belongs to item A and therfor we assum that tha customer intended to buy A. This assumtion would prove usefull for example when a transaction includes an expensive item like a playstation console and a wery popular game we would not assume that tha customer intended to buy the game due to higher supportand tha consolewould be complimentarie.
+
+### Upper Limit Function
+
+As stated above the PROFSET has some drawback that makes in not suted for tha data we are handling. One of these drawback is the fact that when we are allocating profit to the frequent item-set in each transaction we allocate the sumtotal of the whole transaction to it. This means that if the frequent item-set in question has a low price relative to the transaction we can expect some inflated cross-seeling potential of the item that will skew the results. To solve this problem we need to introduce some restriction to what can be allocate to each item-set. A simple restriction would be to add a binary like condition to the allocation where only transactions with a sumtotal of twice the price of the frequent item-set would be allocated as it would not make much sens that a person would intend to buy some item and walk out from tha retailer with complimentary items that are X times more expansive than the puchasing intent. This Binary condition would make sens for example when i customer walks in to buy a very expensive TV it is not likly that he would walk out with a complementary soundsystem that is equel in price, in the case where the customer walks out with both the soundsystem and TV it would be sensable to assume tha the intent was to buy both even if the TV would classify as a frequent item-set. The binary-like restriction would however precent a problem on low price items, for example lets assume that the customers intent was to buy a small LED booklamp priced at \$5 but needs to buy a \$7 battery for the lamp. In the case of the lamp it would not seem a bad practis to allocate tha price of the battery to the lamp since the intent was indeed to buy the lamp and tha battery was complementary. To solve this problem we precent the *Upper Limit Function* Eq.$\eqref{upperlimit}$, this function is intendet to reflect to some extent the beahavior of customers. We belive tha it would be sutable to us a function with exponential decay wit respect to the price of the frequent itemset, in other word we are willing to accept more expensive complementary items when tha total of the transaction is low but less expensive when the price of the frequent item is high. This function is precented in fig.$\ref{fig:accfunc}$. the parameters to this function would be a reserch question on its own but for now we will assume that a customer buying an item that aprochet zero in price is willing to bou a complimentary item with it that is 120% of the intended item, but as we aproche expensive products arround \$2000 we are willing to accept %25. These assumtion are somewhat relatable to risk aversion where people are known to be willing to take larger riskt when dealing with low sums of money but les with increasing moneny. vísa í einhver bjévítans risk aversion grein....hægt að estimera með insight knwloage
+
+\begin{equation} \label{upperlimit}
+\begin{aligned}
+U(x) = exp\big(\frac{-x}{\lambda}\big) + 1.25
+\end{aligned}
+\end{equation}
+
+
+```{r accfunction,results="hide", echo=F,eval=T,fig.cap="\\label{fig:accfunc} Upper limit function precented by Julius"}
+Price <- seq(0,200000,50)
+acept <- function(x){1.0*exp(-x/20000)+1.25}
+Threashold <- acept(Price)
+dff <- as.data.frame(cbind(Price,Threashold))
+ggplot(dff, aes(Price)) + 
+  geom_line(aes(y = Threashold),color = "steelblue4")+
+  theme_bw()+
+  MTheme 
+```
+
+Demonstrating how this works in practis is best explaned by looking at \ref{tab:tab1}. In this example lets assume that we had discovered 3 frequent items a,b and c and there prices and support are in table A on the left. the determined purchase intend can be seen in column 3 (PI) in table B on the right. The corresponding threashold of what would be accounted as maxumum acceptable cross-sell is in column 4 (U(x)). The last column is the true allocated profit to each of the Item-sets are in the last column.
+
+```{r,echo=F,eval=T}
+price = c(10000, 20000, 6000, 5000) 
+Item = c("a", "b", "c", "d") 
+Support = c(0.6, 0.1, 0.3, 0.45) 
+dfp = data.frame(Item, price, Support)
+
+TID = c("0", "10", "21", "57")
+Items = c("a,b","a,c","c,d","b,d")
+PI = c("a", "a", "d","d") 
+AX = acept(c(10000, 10000, 5000, 5000))*(c(10000, 10000, 5000, 5000))
+TP = c(30000, 16000, 11000, 25000)
+MX = c(10000,16000,11000,5000) 
+dft = data.frame(TID,Items,PI,TP,AX,MX)
+names(dft)[3] <- "PI"
+names(dft)[4] <- "TP"
+names(dft)[5] <- "U(x)"
+names(dft)[6] <- "M(x)"
+
+# print(xtable(dfp), file="ta.tex", floating=FALSE)
+# print(xtable(dft), file="tb.tex", floating=FALSE)
+# \begin{table}[ht]
+# \centering
+# \subfloat[Table A]{\label{tab:tab1a}\scalebox{1.0}{\input{./ta}}}\quad
+# \subfloat[Table B]{\label{tab:tab1b}\scalebox{1.0}{\input{./tb}}}
+# \caption{Left: Item Price and Support. Right: PI = purchase intent, TP = Transaction Profit M(x) = allocated profit to each Item-Set in each of tha transactions}
+# \label{tab:tab1}
+# \end{table}
+```
+
+\begin{table}[htb]
+\begin{minipage}{.38\textwidth}
+\centering
+```{r,echo=F,eval=T,results='asis'}
+library("xtable")
+print(xtable(dfp),floating=FALSE)
+```
+\captionof{table}{Simple example of discovered items whith prices}
+\end{minipage}
+\begin{minipage}{.48\textwidth}
+\centering
+```{r,echo=F,eval=T,results='asis'}
+print(xtable(dft),floating=FALSE)
+```
+\captionof{table}{Resulting Profit allocation when using upper limit}
+\end{minipage}
+\end{table}
+
+
+### Reviced Profit Allocation
+
+To accont for the large price difference precent in the baskets we propose a reviced profit allocation where we assume that the purchainsing intent of the customer is the maximum contributer to the sum total of the transaction this in conjuction whith the upper limit function will only allow
+
+\begin{algorithm}[H]
+ \KwData{All transactions and frequent Item-sets}
+ \KwResult{price allocated to each frequent Item-set}
+ initialization $M(X) := 0$\;
+\For{every transaction $T_{j}$}{
+ \If{$T_{j}$ contains frequent Item-set}{
+    Calculate MC($T_{j}$) with eq.$\eqref{maxcon}$\;
+    Calculate U(x) with eq.$\eqref{upperlimit}$\;
+    Calculate m(x) with eq.$\eqref{transprofit}$\;
+    $M(X) \leftarrow MC(X)$\;
+    \uIf{$U(x) >= m(x)$}{
+      $M(X) := M(X) + m(x)$\;
+    }
+    \Else{
+      $M(X) := M(X) + Profit_{MC(X)}$\;
+    }
+ }
+}
+
+\Return{all M(X)}
+\caption{Reviced Profit Allocation...laga italic font}
+\end{algorithm}
+
+
+the look all the steps in tha model would be tha following
+
+\begin{figure}[H]
+\definecolor{steeleblue}{RGB}{202,225,255}
+\centering
+\begin{forest}
+  forked edges,
+  for tree={
+    if level=0{align=center}{% allow multi-line text and set alignment
+        align={@{}C{5mm}@{}},
+    },
+    draw=black,
+    fill=steeleblue,
+    minimum height=8ex,
+    edge={-Latex},
+    text centered,
+    font=\scriptsize,
+    grow'=0,
+    align=c,
+    rounded corners
+  },
+  highlight/.style={
+    thick
+  }
+  [{Query \\Database}, highlight
+    [{Preprocess, \\Sample data}, highlight
+      [{Discover \\Frequent sets}, highlight
+        [{Allocate \\Profit}, highlight
+          [{Select \\Optimal sets}, highlight
+            [{Visualize \\Results}, highlight
+            ]
+          ]
+        ]  
+      ]
+    ]
+  ]
+\end{forest}
+\caption{Model Diagram}
+\label{fig:MODEL}
+\end{figure}
+
+
+\FloatBarrier
+
+# Results
+
+\FloatBarrier
+
+
+## Simulations
+
+From the 30 simulations on the sample dataset two are highlighted in table.$\ref{tab:tafla1}$ and table.$\ref{tab:tafla2}$. These two tables are ordered by the profit allocated to the item-sets as discussed above. As we can see there is some difference between the tables and it is in fact due to the use of the probability distribution $\Theta_{T_{j}}(X_{max})$. The last column in both tables is the net profit from each item and is commonly used in promotional campaigns. We can clearly see that if we rank the item-sets in with the cross-selling potential included we get a very different result.
+
+After a good implementation of this it would be optimal to be able to do some further filtering like adding a clustering/grouping algorithm before the profit allocation, this filter would help to group to gather transactions of similar content and would likely eliminate the large variance of item-price in each basket. fig. shows a step by step process to get the optimal set of product to promote should it be done through coupons of personalized promotions
+
+```{r table1, echo=F,eval=T,results='asis'}
+
+#Remove whitespace from varchar(36)
+ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
+
+PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"M(X)" = Result3$frame1$M3,"P" = as.character(round(NP,2)))
+
+PP <- PP[order(-(as.numeric(PP[,3]))),]
+
+# add color to rows
+linCol <- (which(as.numeric(PP[,4]) >= min(tail(sort(as.numeric(PP[,4])),5)))-1)
+col    <- rep("\\rowcolor[gray]{0.90}", length(linCol))
+
+print(
+  xtable(
+    PP,
+    caption = 'Net worth of each set with cross selling potential included M(X) and indivitual sales profit P from each of the item-sets, higlighted in gray are tha top 5 items-sets that would be selected by the naive selection from simulation 1',
+  label = "tab:tafla1"
+  ),
+  comment = FALSE,
+  type = 'latex',
+  add.to.row = list(pos = as.list(linCol), command = col),
+  caption.placement = "top",
+  table.placement="!h",
+  floating = TRUE,
+  scalebox = 0.5
+)
+
+```
+
+```{r table2, echo=F,eval=F,results='asis'}
+
+#Remove whitespace from varchar(36)
+ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
+
+PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"M(X)" = Result3$frame1$M3,"P" = as.character(round(NP,2)))
+
+PP <- PP[order(-(as.numeric(PP[,3]))),]
+
+# add color to rows
+linCol <- (which(as.numeric(PP[,4]) >= min(tail(sort(as.numeric(PP[,4])),5)))-1)
+col    <- rep("\\rowcolor[gray]{0.90}", length(linCol))
+
+print(
+  xtable(
+    PP,
+    caption = 'Net worth of each set with cross selling potential included M(X) and indivitual sales profit P from each of the item-sets, higlighted in gray are tha top 5 items-sets that would be selected by the naive selection from simulation 1',
+  label = "tab:tafla2"
+  ),
+  comment = FALSE,
+  type = 'latex',
+  add.to.row = list(pos = as.list(linCol), command = col),
+  caption.placement = "top",
+  table.placement="!h",
+  floating = TRUE,
+  scalebox = 0.5
+)
+
+```
+
+\FloatBarrier
+
+## Optimization
+
+For this example we choose to limit the total number of items in the resulting optimization model to 6 items. Of those 6 items only two can be from each product group. This can however be changed to any user preferred number. the results can be seen in table.$\ref{tab:tafla3}$. The rightmost column in table.$\ref{tab:tafla3}$ indicates if the item is a part of the solution from the optimization model
+
+
+```{r table3, echo=F,eval=T,results='asis'}
+
+#Remove whitespace from varchar(36)
+ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
+
+#skoða villu
+PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"M(X)" = Result3$frame1$M3,"P" = as.character(round(NP,2)),"Group"=character(length(Result3$frame1$M3)),"IsOptimal" = optimal)
+
+# Add Group to table
+for(j in 1:nrow(PP)){
+PP[j,"Group"] <- paste(as.character(dimnames(CM)[[1]][as.logical(CM[,j])]),collapse = ",")
+}
+PP <- PP[order(-(as.numeric(PP[,3]))),]
+
+P2 <-PP
+
+# add color to rows, þarf að skoða betur gráu litina með tilliti til stærðar subsets
+linCol <- (which(as.numeric(PP[,4]) >= min(tail(sort(as.numeric(PP[,4])),numberOfGroups)))-1)
+
+colur <- function(x){
+ ifelse(x=="TRUE",
+        paste("\\textcolor{JungleGreen}{",x,"}"),
+        paste("\\textcolor{black}{",x,"}"))
+}
+
+colur2 <- function(x,y){
+ ifelse(x=="TRUE",
+        paste("\\textcolor{JungleGreen}{",y,"}"),
+        paste("\\textcolor{black}{",y,"}"))
+}
+
+
+PP[,"ItemSet"] <- colur2(PP[,"IsOptimal"],PP[,"ItemSet"])
+PP[,"Support"] <- colur2(PP[,"IsOptimal"],PP[,"Support"])
+PP[,"M(X)"] <- colur2(PP[,"IsOptimal"],PP[,"M(X)"])
+PP[,"P"] <- colur2(PP[,"IsOptimal"],PP[,"P"])
+PP[,"Group"] <- colur2(PP[,"IsOptimal"],PP[,"Group"])
+PP[,"IsOptimal"] <- colur(PP[,"IsOptimal"])
+
+col <- rep("\\rowcolor[gray]{0.90}", length(linCol))
+
+TP <- xtable(PP,caption = 'Last column of table shows results from optimization model',label = "tab:tafla3")
+#align(TP) <- "|l|l|l|l|l|X|l|"
+print(TP,
+  comment = FALSE,
+  type = 'latex',
+  add.to.row = list(pos = as.list(linCol), command = col),
+  caption.placement = "top",
+  table.placement="!h",
+  floating = TRUE,
+  #tabular.environment = "tabularx",
+  #width = "\\textwidth"
+  scalebox = 0.5,
+  floating.environment = "sidewaystable",
+  sanitize.text.function = function(x){x}
+)
+
+```
+
+\FloatBarrier
+
+# Conclutions
+
+\FloatBarrier
+
+## Simulations
+
+As stated in the results chapter we get very different results from the PROFSET profit allocation method than from the naive method of selecting items and item-sets for promotional purposes. One drawback of this method is that is seem to be a strong assumption that the customers intent was to by the frequent item-set and the rest of the items in the basket are complimentary to the frequent item-set. For example if we have a basket that contains a large TV monitor and an HDMI-cable we are assuming that the customers intent was to buy the HDMI-cable due to it being a frequent item and the TV being complimentary. This will result in a very high profit to be allocated to the HDMI-cable and non to the TV for the fact that it is not a frequent item-set. This drawback will be addressed at a later time but at the current moment a straight forward solution would be to limit the profit allocation in a way that it will not add complimentary items to a set it is two times more expensive than the frequent item. This would limit the inflation of item-set profit when dealing with data that has large variance in item prices. Another way would be to introducing some clustering of product before the profit allocation to ensure the products of similar frequency and price are clustered together. Using this method would however be ideal to use in the supermarket data available.
+
+\FloatBarrier
+
+## Speed of calculations
+
+One of the drawback of the current version of the code for profit allocation is the fact that it uses a large *for* loop to go through all of the transactions. This is very time-consuming indeed however a solution to this problem is not obvious at the moment. R has some available packages like *plyr* that address problems like these but this however will be addressed at a later time of the project and not considered a problem of high priority.
+
+\FloatBarrier
+
+## Normalization
+
+\FloatBarrier
+
+## Displaying Results
+
+### R implemenatation (appendix sidar)
+
+The next step is to implement the pseudo algorithm in R. Due to a large size of transactional database transactions were limited to 100 during development. These 100 transactions were sampled randomly from the database. After Sampling two matrices are structured around the transactions one is a binary matrix not containing the quantity of each item in the transaction just an indicator if an item was bought or not. this transaction matrix is then transformed to a "transaction-class" for the arules package to read and mine for frequent items sets. the second matrix is a matrix of double numbers where instead of having 1 where the item was bought but the margin of the product multiplied by the quantity in each of the transactions. Both matrices are sparse to reduce memory usage and speed up calculation. Since the algorithm contains the random distributions $\Theta_{T_{j}}$ a large for loop of 30 runs was used to simulate 30 of the pseudocode. This was done to be able to compare the results of each of the runs and draw some conclusions before further development was done. The R code can be viewed in the block below. 
+
+```{r rcode, echo=F,eval=FALSE}
+
+
+#Load transactions from local R datafile
+#load(file="C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda")
+#setwd("C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis")
+load(file="C:\\Users\\hr_juliusp\\Desktop\\MThesis\\Data\\LargeTA.Rda")
+#setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
+df <- res;
+df <- na.omit(df);
+
+#Sample 100 transactions from Dataset
+#df.sample <- df[(df$TransactionNo %in% sample(df$TransactionNo,size=100)),] 
+
+df.sample2 <- df[(df$GroupName %in% sample(df$GroupName,size=5)),]
+
+df.sample <- df.sample2[(df.sample2$TransactionNo %in% sample(df.sample2$TransactionNo,size=100)),]
+
+#Extract the columns needed
+Transactions <- df.sample[,c(2,7,9)]
+DF <- Transactions[,c(1,2)]
+
+#Numerical matrix, total number of items in each transaction
+S <- Transactions %>% 
+  select(CustomerNo,CategoryName,NetProfit) %>%
+  distinct() %>%
+  mutate(value = NetProfit) %>%
+  spread(CategoryName, value, fill = 0)
+S <- S[,-2]
+S <- ddply(S,.(CustomerNo), numcolwise(sum))
+
+E <- S[,(2:ncol(S))]
+
+#function to scale nonzero values of each column
+colscale <- function(x){
+  a <- x
+  a[a!=0] <- scale(x[x!=0]) 
+  return(a)
+  }
+
+C <- apply(E, 2, colscale)
+
+# #E <- S[,2]
+# L <- E!=0
+# E[L] <- scale(E[L])
+# sd(E[E[,3]!=0,3])
+
+E <- cbind("CustomerNo"=S$CustomerNo,C)
+
+
+#Binary matrix
+B <- DF %>%
+  select(CustomerNo, CategoryName) %>%
+  distinct() %>%
+  mutate(value = 1) %>%
+  spread(CategoryName, value, fill = 0)
+
+#Convert to transactions and sparce matrix
+data <- as(as.matrix(B[, -1]), 'transactions')
+#data2 <- as(t(as.matrix(S[, -1])), 'dgCMatrix') # bilta
+data2 <- as(t(as.matrix(E[, -1])), 'dgCMatrix') # bilta
+
+
+#Initialize variables
+Result <- list()
+
+
+#Mine for Frequent itemsets
+e <- eclat(data, parameter = list(support = .04, minlen=1, tidLists = TRUE))
+
+#Sparse matrices lines are columns and vice versa
+P <- data@data
+
+#Initialize variables
+supp <- as.vector(unlist(e@quality))
+results <- list();
+lengd <- nrow(e@quality)
+NP <- vector("numeric",nrow(e@items))
+
+#Profit Allocation loop 30 simulations from pseudocode
+for(jj in 1){
+  data@data <- P
+  M <- vector(mode="numeric", length=length(supp))
+  for(i in 1:nrow(data)){
+    if(sum(is.subset(e@items,data[i]))>0){
+      while(TRUE){
+        
+        IsSubset <- as.vector(is.subset(e@items,data[i]))
+        Maximal <- IsSubset
+        Maximal[which(is.subset(e@items,data[i]))] <- is.maximal(e@items[is.subset(e@items,data[i])])
+        tafla <- cbind("IsSubset" = IsSubset,"IsMaximal" = Maximal)
+        
+        #If more than one maximal set calculate Distribution
+        if (sum(tafla[,2])>1){
+          #Calculate normalization constant
+          normal_C <- sum(supp*tafla[,2])
+          #Generate probability distribution
+          sampleDist = function(n) {
+            sample(x = c(1:lengd), n, replace = TRUE,prob = as.vector((supp*tafla[,2])/normal_C)) 
+          }
+          #Sample from distribution
+          Rule <- sampleDist(1)
+          #remove Rule From subset in Transaction(i)
+          tafla[Rule,] <- F
+          #Remove Transaction
+          data@data[,i] <- as.logical(data@data[,i] - e@items@data[,Rule])
+          #Allocate Profit, hérna vantar if skilyrði til að tékka af clustera
+          M[Rule] <- M[Rule] + sum(as.vector(data@data[,i]*data2[,i]))
+        } else if (sum(tafla[,2])==1){
+          Rule <- which((tafla[,2]))
+          tafla[Rule,] <- F
+          data@data[,i] <- as.logical(data@data[,i] - e@items@data[,Rule])
+          #Allocate Profit, hérna vantar if skilyrði til að tékka af clustera
+          M[Rule] <- M[Rule] + sum(as.vector(data@data[,i]*data2[,i]))
+        } else{
+          #For Rules not which are not Maximal
+          Rule <- which.max((tafla[,1]))
+          data@data[,i] <- as.logical(data@data[,i] - e@items@data[,Rule])
+          tafla[Rule,] <- F
+          #Allocate Profit, hérna vantar if skilyrði til að tékka af clustera
+          M[Rule] <- M[Rule] + sum(as.vector(data@data[,i]*data2[,i]))
+        }
+        
+        if(sum(is.subset(e@items,data[i])) == 0){break}
+        
+      }
+      
+    }  
+    #calculate the indivitual profit from each item-set
+    NP <- NP + as.vector(colSums(e@items@data*data2[,i]))
+  }
+  #insert results from each run to a list
+  sEOG<-paste("frame", jj, sep="")
+  runResults <- as.data.frame(cbind(inspect(e),M))
+  Result[[sEOG]] <- runResults
+  
+}
+
+```
+
+
+One of the challenges when doing analysis like the one above is to display the results that could lead to actionable executions. We propose the use of a simple Pareto chart that can be used for a simple ABC analysis. From this ABC analysis we are able to decide what to include in promotions. We might draw the conclusion that the most frequent items (Category's) do have some ability of selling theme self and might not need to be promoted. This conclusions leads us to focusing on the "B" and "C" section of the chart. This decision would however be taken by the retailer and should go hand in hand with the strategy that they have present in the company. a sample of this chart can be seen in fig.$\ref{fig:pareto}$
+
+```{r pareto, echo=F,eval=T,results='asis',fig.cap="\\label{fig:pareto}Pareto chart of the discovered Categorys with high cross-selling potential"}
+
+windowsFonts(Times=windowsFont("Times New Roman"))
+
+Df <- as.data.frame(P2[P2[,6]==T,])
+Df$IsOptimal <- NULL
+Df$P <- NULL
+Df$Group <- NULL
+Df$Support <- NULL
+colnames(Df)[1] <- "category"
+colnames(Df)[2] <- "frequency"
+Df$category <- as.character(Df$category)
+Df$category_int <- c(1:nrow(Df))
+#breyta factorum í tölur
+Df$frequency <- round(as.numeric(levels(Df$frequency))[Df$frequency],2)
+Df$cumfreq <- cumsum(Df$frequency)
+Df$cumperc <- Df$cumfreq/max(Df$cumfreq)*100
+Df$category <- Df$category[order(Df$category)]
+
+
+nr <- nrow(Df)
+N  <- sum(Df$frequency)
+
+y2 <- c("  0%", " 10%", " 20%", " 30%", " 40%", " 50%", " 60%", " 70%", " 80%", " 90%", "100%")
+
+Df_ticks <- data.frame(xtick0 = rep(nr +.55, 11), xtick1 = rep(nr +.59, 11), ytick = seq(0, N, N/10))
+
+colfunc2 <- colorRampPalette(c("lightsteelblue1", "lightsteelblue4"))(nrow(DF))
+
+
+#ggplot(Df, aes(x = category,y = frequency,fill=frequency)) + geom_bar(stat = "identity",col="black") +
+#ggplot(gagnarammi, aes(x = category,y = frequency,fill=frequency)) + geom_bar(stat = "identity",col="black") +
+#  scale_fill_manual(values=colfunc2) +
+
+
+g <- ggplot(Df, aes(x=category, y=frequency)) + 
+  geom_bar(stat="identity",col="black") +
+  scale_fill_manual(values=colfunc2) +
+  geom_line(aes(x=category_int, y = cumfreq, color = category_int)) +
+  geom_point(aes(x=category_int, y = cumfreq, color = category_int), pch = 19) +
+  scale_y_continuous(breaks=seq(0, N, N/10), limits=c(-.02 * N, N * 1.02)) + 
+  scale_x_discrete(breaks = Df$category) +
+  guides(fill = FALSE, color = FALSE) + 
+  annotate("rect", xmin = nr + .55, xmax = nr + 1, ymin = -.02 * N, ymax = N * 1.02, fill = "white") +
+  annotate("text", x = nr + .8, y = seq(0, N, N/10), label = y2, size = 3,family = "Times") +
+  geom_segment(x = nr + .55, xend = nr + .55, y = -.02 * N, yend = N * 1.02, color = "grey50") +
+  geom_segment(data = Df_ticks, aes(x = xtick0, y = ytick, xend = xtick1, yend = ytick)) +
+  labs(title = paste0("Pareto Chart of hig cross-selling categorys"), y = "Relative Profit Margin") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  MTheme
+
+plot(g)
+
+```
+
+
+
+```{r CSpotential, echo=F,eval=T,results='asis',fig.cap="\\label{fig:CSP} Cross-selling potential of each item Category"}
+options(warn=-1)
+
+suppressPackageStartupMessages(require(RColorBrewer))
+suppressPackageStartupMessages(require(scales))
+suppressPackageStartupMessages(require(translateR))
+
+ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
+
+
+windowsFonts(Times=windowsFont("Times New Roman"))
+percentage <- (round(((Result3$frame1$M3/NP3)),2))
+gagnarammi <- data.frame(cbind(ItemSet,percentage))
+gagnarammi$percentage <- round(as.numeric(levels(gagnarammi$percentage))[gagnarammi$percentage],2)
+
+
+#translate data to english,change to character and back
+if(F){
+  enska <- translate(content.vec = as.character(gagnarammi$ItemSet),
+                     google.api.key = 'AIzaSyBqhGsujiPTVSoMqgrPXzni3zdm7mtXqGs',
+                     source.lang = 'is',
+                     target.lang = 'en')
+  
+  gagnarammi$ItemSet <- as.factor(enska)
+}
+
+gagnarammi <- gagnarammi[order(-(gagnarammi$percentage)),]
+gagnarammi$ItemSet <- factor(gagnarammi$ItemSet, levels = gagnarammi$ItemSet[order(-(gagnarammi$percentage))])
+
+#gagnarammi <- gagnarammi[c(1:20),]
+colfunc <- colorRampPalette(c("lightsteelblue1", "lightsteelblue4"))(nrow(gagnarammi))
+
+upper <- round(max(na.omit(gagnarammi$percentage))/0.5)*0.5
+
+
+# png(filename="Std_PNG.png",
+#     units="in",
+#     width=14,
+#     height=8,
+#     pointsize=12,
+#     res=72)
+ggplot(gagnarammi, aes(x = ItemSet,y = percentage,fill=ItemSet)) + geom_bar(stat = "identity",col="black") +
+  scale_fill_manual(values=colfunc) +
+  geom_hline(yintercept=1, color="red") +
+  geom_text(aes(y = percentage, label = scales::percent(percentage)), vjust = -0.25,size=3.5,family = "Times") +
+  theme_bw()+
+  MTheme +
+  scale_y_continuous(breaks=seq(0,upper,0.5),labels = scales::percent) +
+  ggtitle("Top 20 Cross-selling Categories of discovered itemsets") +
+  labs(x="Item Category") +
+  labs(y="Cross selling")+
+  theme(legend.position="none")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+# dev.off()
+
+options(warn=0)
+```
+
+
+
+```{r network,results="hide",echo=F,eval=T,fig.cap="\\label{fig:net} Network analysis of cotegorys"}
+#,fig.width=6, fig.height=2.5
+options(warn=-1)
+opar <- par()
+par(family="Times")
+data@data <- P
+suppressPackageStartupMessages(require(arulesViz))
+
+Left <- as.factor(e@items@itemInfo$labels[e@items@data[,order(-(percentage))[3]]])
+
+rules_sales <- apriori(data, 
+                   parameter=list(support =0.01, confidence =0.05, minlen=2), 
+                   appearance = list(lhs=Left,default="rhs"))
+plot(rules_sales, method='graph',control=list(type='items',nodeCol="steelblue1",alpha=0.9),main="Cross Selling Network")
+#title(main="Cross Selling Network")
+#plot(ERR,family="Times")
+par(opar)  
+options(warn=0)
+```
+
+
+
+\FloatBarrier
+
+## Conclutions and Descussions
