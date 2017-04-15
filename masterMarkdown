@@ -21,6 +21,8 @@ header-includes:
    - \usepackage{caption,setspace}
    - \usepackage{float}
    - \captionsetup[figure]{font={stretch=1.2}}
+   - \usepackage{tikz}
+   - \usetikzlibrary{shapes,backgrounds,positioning,fit,calc,shapes.multipart}
 output:
   pdf_document:
     citation_package: natbib
@@ -1024,7 +1026,7 @@ All the decission variables in the model are binary but if we taka e look at the
 \setstretch{1.5}
 
 
-This cost is rearly calculated in the industry and it is estamated that only 63% do. How deep down the store hirearcy this cost is estemated varies but rearly is this calculated down to itemlevel. the supplyer of tha data in this project estemates the inventory cost to be around 25%. The model is solved using the branch and cut method \cite{BandC} available in the GlpkAPI \cite{glpkapi} in R.  
+This cost is rearly calculated in the industry to extreame accuracy. How deep down the store hirearcy this cost is estemated varies but rearly is this calculated down to item level. the supplyer of the data in this project estemates the inventory cost to be around 25% on average over all the board, this poses some limitations that reduce accuracy of the resulting optimal set of items, this is easy change in the model by a simple vector contaning the variable holding cost for each category. The model is solved using the branch and cut method \cite{BandC} available in the GlpkAPI \cite{glpkapi} in R.  
 
 \FloatBarrier
 
@@ -1298,6 +1300,29 @@ the look all the steps in tha model would be tha following
 \label{fig:MODEL}
 \end{figure}
 
+
+
+\FloatBarrier
+
+## Other Uses
+
+As we stated in Chapter 1 we belive that more information can be extracted from the model than just a hit-list of products to use in promotions or assortements. Instead of just appending the profit from complimentary products to the frequent itemsets in the profit allocation we can simply Keep track of all the categories that are excepted as cross sell items in each transaction. By doing that we have now two list of items on containging the frequent RHS and the complimentary items. Fig.\ref{fig:venn} shows thes two intersecting lists of items as a subset of all the items(categories) in the store. There will also excist the third list of items repricented with the blue area in Fig.\ref{fig:venn}. these are the products tha belong neither to the RHS nor the list of complementary items, $\{RHS \downarrow C \}$ This are should be highly considerd when it comes to discontinuations of item and tha removed from the shop or put on sail. We belive tha by focusing on these product we will be able to remove products with minimal impact on sales of the remaining products in store. 
+
+\definecolor{steeleblue}{RGB}{202,225,255}
+\definecolor{steeleblue2}{RGB}{141,182,205}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[every text node part/.style={align=center}]
+        \draw[rounded corners,fill=steeleblue,thick] (-5,-3.125) rectangle (5,3.125) node[below left]{$I$};
+        \fill[white] (-1.5,0) circle (2cm);
+        \fill[white,thick] (1.5,0) circle (2cm);
+        \draw[thick] (-1.5,0) circle (2cm) node[] {$RHS$};
+        \draw[thick] (1.5,0) circle (2cm) node[] {$C$};
+        \node[] at (0,2.5) {$\{RHS\downarrow C \}$};
+\end{tikzpicture}
+\caption{Subsets of interesting items. C stands for comlementary items and I for all items}
+\label{fig:venn}
+\end{figure}
 
 \FloatBarrier
 
@@ -1701,7 +1726,7 @@ gagnarammi <- gagnarammi[order(-(gagnarammi$percentage)),]
 gagnarammi$ItemSet <- factor(gagnarammi$ItemSet, levels = gagnarammi$ItemSet[order(-(gagnarammi$percentage))])
 
 #gagnarammi <- gagnarammi[c(1:20),]
-colfunc <- colorRampPalette(c("lightsteelblue1", "lightsteelblue4"))(nrow(gagnarammi))
+colfunc <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(nrow(gagnarammi))
 
 upper <- round(max(na.omit(gagnarammi$percentage))/0.5)*0.5
 
