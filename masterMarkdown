@@ -23,20 +23,22 @@ header-includes:
    - \captionsetup[figure]{font={stretch=1.2}}
    - \usepackage{tikz}
    - \usetikzlibrary{shapes,backgrounds,positioning,fit,calc,shapes.multipart}
+   - \usepackage{appendix}
+   - \usepackage{pdfpages}
 output:
   pdf_document:
     citation_package: natbib
     fig_caption: true
-    template: tempari3.tex
+    template: tempari4.tex
     keep_tex: true
     includes:
       before_body: doc_prefix.tex
+
 ---
 
 ```{r setup, include=FALSE}
 heima <- T
-
-#setwd("C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/ritgerd2")
+#setwd("C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/ritgerd2")      after_body: equation2.tex
 #setwd("C:/Users/Julius/OneDrive - Reykjavik University/MThesis/ritgerd2")
 suppressPackageStartupMessages(require(dplyr))
 suppressPackageStartupMessages(require(plyr))
@@ -56,22 +58,25 @@ source('C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Rcode\\mult
 source('C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Rcode\\MTheme.R')
 source('C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Rcode\\informs.R')
 }
+
 ```
 
 ```{r calculations, echo=F,eval=T,results='asis',results="hide"}
 
 #Load transactions from local R datafile
 if(heima==F){
-load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA.Rda")
+load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA2.Rda")
 } else{
-load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda");    
+load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA2.Rda");    
   }
 #load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda");
 #load(file="C:\\Users\\hr_juliusp\\Desktop\\MThesis\\Data\\LargeTA.Rda")
 #setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
 #load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA.Rda")
 #setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
-df <- res;
+
+res2 <- res2[res2$Quantity<=10,]
+df <- res2;
 df <- na.omit(df);
 
 #Sample 100 transactions from Dataset
@@ -88,14 +93,14 @@ df.sample <- df.sample2[(df.sample2$TransactionNo %in% sample(df.sample2$Transac
 
 
 #Extract the columns needed
-Transactions <- df.sample[,c(2,7,9)]
+Transactions <- df.sample[,c(2,7,11)]
 DF <- Transactions[,c(1,2)]
 
 #Numerical matrix, total number of items in each transaction
 S <- Transactions %>% 
-  select(CustomerNo,CategoryName,NetProfit) %>%
+  select(CustomerNo,CategoryName,NetProfit2) %>%
   distinct() %>%
-  mutate(value = NetProfit) %>%
+  mutate(value = NetProfit2) %>%
   spread(CategoryName, value, fill = 0)
 S <- S[,-2]
 #S <- ddply(S,.(CustomerNo), numcolwise(sum))
@@ -200,8 +205,8 @@ TID_Price <- rowSums(G[,-1])
 
 R_profit <- as.data.frame(cbind("whichRule"=whichRule,"NP4"=TID_Price,"Rprofit"=Rprice))
 
-# accept <- function(x){x*2*exp(-x/300000)}
-accept <- function(x){x*2.1}
+accept <- function(x){1.0*x*exp(-x/200000)+x*1.25}
+#accept <- function(x){x*2.1}
 
 R_profit$acc <- accept(R_profit$Rprofit)
 
@@ -431,7 +436,7 @@ supp(X) = \frac{|\{ t \in T;X \subseteq t \}|}{|T|}
 #
 ############################################################
 
-dfi <- res[,c("CustomerNo","CategoryName")]
+dfi <- res2[,c("CustomerNo","CategoryName")]
 dfi <- dfi[(dfi$CustomerNo %in% sample(dfi$CustomerNo,size=10000)),]
 dfi <- dfi %>%
   select(CustomerNo, CategoryName) %>%
@@ -440,9 +445,9 @@ dfi <- dfi %>%
   spread(CategoryName, value, fill = 0)
 
 # Reikningar fyrir Frequencyplot
-FQ <- as.data.frame(table(unlist(res$CategoryName)))
+FQ <- as.data.frame(table(unlist(res2$CategoryName)))
 colnames(FQ)[1] <- "CategoryName"
-FQ$Freq <- FQ$Freq/nrow(res)
+FQ$Freq <- FQ$Freq/nrow(res2)
 FQ <- FQ[order(-FQ$Freq),]
 FQ2 <- FQ[c(1:10),]
 
@@ -659,7 +664,7 @@ When aggregating data from tha database we have a lot of flexability. For exampl
 
 colfunc3 <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(6)
 
-dfa <- res[,c("TransactionNo","GroupName")]
+dfa <- res2[,c("TransactionNo","GroupName")]
 
 
 dfa <- dfa %>%
@@ -676,9 +681,6 @@ y <- as.vector((a@lengths[1:s])/a@Dim[1])
 x <- c(1:s)
 df1 <- data.frame(x,y)
 
-
-
-
 xx <- ggplot(df1, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity",col="black") +
   scale_fill_manual(values = colfunc3) +
   theme_bw()+
@@ -688,7 +690,7 @@ xx <- ggplot(df1, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity"
   labs(y="Percentage Of Transactions")+
   theme(legend.position="none")
 
-dfj <- res[,c("CustomerNo","GroupName")]
+dfj <- res2[,c("CustomerNo","GroupName")]
 
 
 dfj <- dfj %>%
@@ -714,7 +716,9 @@ yy <- ggplot(df2, aes(x=x, y=y, fill=as.factor(x))) + geom_bar(stat = "identity"
   labs(y="Percentage Of Transactions")+
   theme(legend.position="none")
 
+
 multiplot(xx,yy,cols = 2)
+
 ```
 
 
@@ -748,16 +752,10 @@ Transformation is a nother option we have in regards of data preprocessing. the 
 #
 ############################################################
 
-if(heima==F){
-load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA2.Rda")
-} else{
-load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA2.Rda");    
-  }
-
 # Reikningar fyrir Frequencyplot
-FQ <- as.data.frame(table(unlist(res$CategoryName)))
+FQ <- as.data.frame(table(unlist(res2$CategoryName)))
 colnames(FQ)[1] <- "CategoryName"
-FQ$Freq <- FQ$Freq/nrow(res)
+FQ$Freq <- FQ$Freq/nrow(res2)
 FQ <- FQ[order(-FQ$Freq),]
 
 #HDMI
@@ -767,8 +765,6 @@ hplot2 <- data.frame("verd"=log(na.omit(res2$NetProfit2[res2$CategoryName==FQ$Ca
 #TV
 hplot3 <- data.frame("verd"=(na.omit(res2$NetProfit2[res2$CategoryName==FQ$CategoryName[67]])))
 hplot4 <- data.frame("verd"=log(na.omit(res2$NetProfit2[res2$CategoryName==FQ$CategoryName[67]])))
-
- 
 
 
 a1 <- ggplot(data=hplot1, aes(hplot1$verd)) + 
@@ -814,7 +810,6 @@ a4 <- ggplot(data=hplot4, aes(hplot4$verd)) +
 
 multiplot(a1,a2,a3,a4,cols = 2)
 
-rm(res2)
 ```
 
 \FloatBarrier
@@ -1405,7 +1400,6 @@ print(
 
 For this example we choose to limit the total number of items in the resulting optimization model to 6 items. Of those 6 items only two can be from each product group. This can however be changed to any user preferred number. the results can be seen in table.$\ref{tab:tafla3}$. The rightmost column in table.$\ref{tab:tafla3}$ indicates if the item is a part of the solution from the optimization model
 
-
 ```{r table3, echo=F,eval=T,results='asis'}
 
 #Remove whitespace from varchar(36)
@@ -1468,6 +1462,86 @@ print(TP,
 
 \FloatBarrier
 
+
+## CROSSELLLLL
+
+```{r CROSSELLLLL, echo=F,eval=T,results='asis',fig.align='center',results="hide"}
+options(warn=-1)
+##RÉTTTTTTTTTTT
+suppressPackageStartupMessages(require(scales))
+
+VENN <- cbind(R_profit,G[,-1])
+VENN <- VENN
+VENN[VENN$TF==0,7:ncol(VENN)]<-0
+
+
+VENN <- VENN %>% 
+  group_by(whichRule) %>% 
+  summarise_each(funs(sum))
+
+VENN <- VENN[-1,]
+
+#henda út 100% reglunum
+eyda <- ((VENN$Rprofit-VENN$total)>=0)
+
+# VENN <- VENN[eyda,]
+
+matrix2 <- VENN[,7:ncol(VENN)]
+
+TFmatrix <- t(e@items@data)
+
+matrix2 <- matrix2*as.numeric(!as(TFmatrix,"matrix"))
+
+crosssalsmatrix <- sweep(matrix2, 1, rowSums(matrix2), `/`)
+
+crossnofn <- e@items@itemInfo$labels
+
+#afeitra
+crossnofn <- trimws(sapply(as(crossnofn,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+crossnofn <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", crossnofn, perl=TRUE)
+
+
+#forlykkja
+
+ddf <- data.frame(
+  Category = as.character(crossnofn[(crosssalsmatrix[1,]!=0)]),
+  value = as.vector(t(crosssalsmatrix[1,(crosssalsmatrix[1,]!=0)]))
+)
+
+ddf <- ddf[order(-ddf$value),]
+ddf$Category <- factor(ddf$Category, levels = ddf$Category[order(-ddf$value)])
+
+ddf <- ddf[c(1:20),]
+
+
+colpie <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(nrow(ddf))
+
+reglutitill <- (crossnofn[e@items@data[,1]])
+g <-  for(i in 1:length(reglutitill)){paste0(reglutitill[i])}
+
+ggplot(ddf, aes(x = Category,y = value,fill=Category)) + geom_bar(stat = "identity",col="black") +
+  theme_bw()+
+  scale_fill_manual(values=colpie) +
+  MTheme + 
+  ggtitle(paste("Cross Cell For Itemset = {",paste(reglutitill,collapse = ','),"}")) +
+  labs(x="Item") +
+  labs(y="Percentage of total Cross sell")+
+  theme(legend.position="none")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(labels = percent_format())
+options(warn=0)
+
+skippa <- 1:nrow(e@items)
+skippa <- skippa[!eyda]
+
+texti <- list()
+for(k in 1:ceiling(length(skippa))){texti[[k]] <- paste("Results Various Items sets No",as.character(k))}
+
+```
+
+
+\FloatBarrier
+
 # Conclutions
 
 \FloatBarrier
@@ -1496,13 +1570,12 @@ The next step is to implement the pseudo algorithm in R. Due to a large size of 
 
 ```{r rcode, echo=F,eval=FALSE}
 
-
 #Load transactions from local R datafile
 #load(file="C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda")
 #setwd("C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis")
 load(file="C:\\Users\\hr_juliusp\\Desktop\\MThesis\\Data\\LargeTA.Rda")
 #setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
-df <- res;
+df <- res2;
 df <- na.omit(df);
 
 #Sample 100 transactions from Dataset
@@ -1736,7 +1809,7 @@ upper <- round(max(na.omit(gagnarammi$percentage))/0.5)*0.5
 #     width=14,
 #     height=8,
 #     pointsize=12,
-#     res=72)
+#     res2=72)
 ggplot(gagnarammi, aes(x = ItemSet,y = percentage,fill=ItemSet)) + geom_bar(stat = "identity",col="black") +
   scale_fill_manual(values=colfunc) +
   geom_hline(yintercept=1, color="red") +
@@ -1756,7 +1829,7 @@ options(warn=0)
 
 
 
-```{r network,results="hide",echo=F,eval=T,fig.cap="\\label{fig:net} Network analysis of cotegorys"}
+```{r network,results="hide",echo=F,eval=F,fig.cap="\\label{fig:net} Network analysis of cotegorys"}
 #,fig.width=6, fig.height=2.5
 options(warn=-1)
 opar <- par()
@@ -1774,10 +1847,365 @@ plot(rules_sales, method='graph',control=list(type='items',nodeCol="steelblue1",
 #plot(ERR,family="Times")
 par(opar)  
 options(warn=0)
+
 ```
+
 
 
 
 \FloatBarrier
 
 ## Conclutions and Descussions
+
+allskonar áliktanir
+
+\FloatBarrier
+
+\renewcommand\bibname{References}
+\bibliography{mybib}
+
+\FloatBarrier
+
+\appendix
+
+#More Results
+
+##Further Results
+
+```{r appendixplot,out.extra='angle=90', ,echo=F,fig.cap=texti,fig.align='center',results="hide",fig.height=12,fig.width=18,out.height='.99\\textwidth',out.width='.99\\textheight'}
+options(warn=0)
+
+############################################################
+#
+#         Crosssell for all discoverd sets
+#
+############################################################
+
+
+
+as <- list()
+k <- 1
+for(j in skippa){
+
+ddf <- data.frame(
+  Category = as.character(crossnofn[(crosssalsmatrix[j,]!=0)]),
+  value = as.vector(t(crosssalsmatrix[j,(crosssalsmatrix[j,]!=0)]))
+)
+
+ddf <- ddf[order(-ddf$value),]
+ddf$Category <- factor(ddf$Category, levels = ddf$Category[order(-ddf$value)])
+
+ddf <- head(ddf,20)
+
+colpie <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(20)
+
+reglutitill <- (crossnofn[e@items@data[,j]])
+
+
+pl <- ggplot(ddf, aes(x = Category,y = value,fill=Category)) + geom_bar(stat = "identity",col="black") +
+  theme_bw()+
+  scale_fill_manual(values=colpie) +
+  MTheme + 
+  ggtitle(paste("Cross Cell For Itemset = {",paste(reglutitill,collapse = ','),"}")) +
+  labs(x="Item") +
+  labs(y="Percentage of total Cross sell")+
+  theme(legend.position="none")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  scale_y_continuous(labels = percent_format())
+
+as[[k]] <- pl
+k <- k+1
+}
+
+efra <- length(as)
+uppi <- seq(1,efra,4)
+for(s in uppi){
+  multiplot(plotlist = (as[c(s:(s+3))]),cols = 2)
+  }
+options(warn=0)
+
+```
+
+\FloatBarrier
+
+#Souce Code
+
+##code
+
+```{r forrit, echo=T,eval=F,fig.height=2.5}
+
+#Load transactions from local R datafile
+if(heima==F){
+load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA2.Rda")
+} else{
+load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA2.Rda");    
+  }
+#load(file="C:\\Users\\Julius\\OneDrive - Reykjavik University\\MThesis\\Data\\LargeTA.Rda");
+#load(file="C:\\Users\\hr_juliusp\\Desktop\\MThesis\\Data\\LargeTA.Rda")
+#setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
+#load(file="C:/Users/hr_juliusp/OneDrive - Reykjavik University/MThesis/Data/LargeTA.Rda")
+#setwd("C:\\Users\\hr_juliusp\\OneDrive - Reykjavik University\\MThesis")
+
+res2 <- res2[res2$Quantity<=10,]
+df <- res2;
+df <- na.omit(df);
+
+#Sample 100 transactions from Dataset
+df.sample <- df[(df$TransactionNo %in% sample(df$TransactionNo,size=100000)),]
+
+#df.sample <- df[1:200000,]
+
+
+if(F){
+  df.sample2 <- df[(df$GroupName %in% sample(df$GroupName,size=10)),]
+
+df.sample <- df.sample2[(df.sample2$TransactionNo %in% sample(df.sample2$TransactionNo,size=1000)),]
+}
+
+
+#Extract the columns needed
+Transactions <- df.sample[,c(2,7,11)]
+DF <- Transactions[,c(1,2)]
+
+#Numerical matrix, total number of items in each transaction
+S <- Transactions %>% 
+  select(CustomerNo,CategoryName,NetProfit2) %>%
+  distinct() %>%
+  mutate(value = NetProfit2) %>%
+  spread(CategoryName, value, fill = 0)
+S <- S[,-2]
+#S <- ddply(S,.(CustomerNo), numcolwise(sum))
+
+S2 <- S %>% 
+  group_by(CustomerNo) %>% 
+  summarise_each(funs(sum))
+
+S <- as.data.frame(S2)
+
+E <- S[,(2:ncol(S))]
+G <- E
+L <- E!=0
+
+E[L] <- scale(E[L])
+#G[L] <- log(G[L])
+
+#E <- cbind("CustomerNo"=S$CustomerNo,E)
+G <- cbind("CustomerNo"=S$CustomerNo,G)
+
+#Binary matrix
+B <- DF %>%
+  select(CustomerNo, CategoryName) %>%
+  distinct() %>%
+  mutate(value = 1) %>%
+  spread(CategoryName, value, fill = 0)
+
+# henda út signla transactions
+RS <- (rowSums(B[,2:ncol(B)]))>1
+
+B <- B[RS,]
+G <- G[RS,]
+
+#Convert to transactions and sparce matrix
+data <- as(as.matrix(B[, -1]), 'transactions')
+
+data4 <- as(t(as.matrix(G[, -1])), 'dgCMatrix') # bilta
+
+#Initialize variables
+Result3 <- list()
+
+#Mine for Frequent itemsets
+#muna í ritgerð og vörn það þarf að establisha einhverju basepoint, ítra niður að tilteknu supporti (brute force)
+
+e <- eclat(data, parameter = list(support = .03, minlen=1, tidLists = TRUE))
+
+#Sparse matrices lines are columns and vice versa
+P <- data@data
+
+
+#Initialize variables
+supp <- as.vector(unlist(e@quality))
+results <- list();
+results2 <- list();
+results3 <- list();
+lengd <- nrow(e@quality)
+
+ptm <- proc.time()
+#Profit Allocation loop 30 simulations from pseudocode
+data@data <- P
+M3 <- vector(mode="numeric", length=length(supp))
+NP3 <- vector("numeric",nrow(e@items))
+afgangur <- 0
+afgangur2 <- 0
+
+
+
+#####################
+if(T){
+Max <- function(x){max(0,which.max(x))}
+
+data@data <- P
+
+itemRuleProb  <-  e@tidLists@data*as.vector(unlist(e@quality))
+itemRuleProb[rowSums(itemRuleProb)>0,]  <- itemRuleProb[rowSums(itemRuleProb)>0,]/rowSums(itemRuleProb[rowSums(itemRuleProb)>0,])
+
+drulluskita <- as.matrix(G[,-1]) %*% (as.matrix(e@items@data)*1)
+
+
+itemRuleProbScaled <- drulluskita*itemRuleProb
+#itemRuleProbScaled <- drulluskitaas.matrix(itemRuleProb>0)*1
+
+
+whichRule <- integer(nrow(itemRuleProb))
+
+whichRule[rowSums(itemRuleProbScaled)>0] <- apply(itemRuleProbScaled[rowSums(itemRuleProbScaled)>0,], 1, Max)
+Rprice    <- vector(mode="numeric",length=nrow(G))
+
+pjasa <- cbind("what"=(1:nrow(G)),"regla"=whichRule)
+pjasa2 <- pjasa[pjasa[,2]!=0,]
+
+Rprice[pjasa2[,1]] <- drulluskita[(pjasa2)]
+
+#Rprice[whichRule!=0] <- RuleMean[whichRule[whichRule!=0]]
+
+
+
+
+TID_Price <- rowSums(G[,-1])
+
+R_profit <- as.data.frame(cbind("whichRule"=whichRule,"NP4"=TID_Price,"Rprofit"=Rprice))
+
+accept <- function(x){1.0*x*exp(-x/200000)+x*1.25}
+#accept <- function(x){x*2.1}
+
+R_profit$acc <- accept(R_profit$Rprofit)
+
+R_profit$TF <- R_profit$NP4<R_profit$acc
+
+R_profit$TF <- R_profit$TF*1
+
+R_profit$total <- R_profit$NP4*(R_profit$TF*1) + R_profit$Rprofit*(!R_profit$TF*1) 
+
+#R_profit <- R_profit[R_profit$whichRule!=0,]
+
+
+
+CROSS <- R_profit %>% 
+  group_by(whichRule) %>% 
+  summarise_each(funs(sum))
+
+
+CROSS2 <- CROSS[-1,]
+
+
+
+NP3 <- CROSS2$Rprofit
+NP <- CROSS2$Rprofit
+
+M3 <- CROSS2$total
+
+Result3$frame1$M3 <- M3
+
+
+
+}
+
+
+sEOG3<-paste("frame", 1, sep="")
+runResults3 <- as.data.frame(cbind(inspect(e),M3))
+Result3[[sEOG3]] <- runResults3
+
+
+#######################
+#      Category       #
+#######################
+SIZE <- size(e@items)
+COLS <- length(size(e@items))
+ROWS <- sum(size(e@items))
+#initialize constraint matrix
+constraintM <- matrix(nrow = ROWS, ncol = COLS, dimnames = list(c(rep("Row",ROWS)),
+                                                               c(rep("Cols",COLS))))
+r <- 1
+for(i in 1: COLS){
+    for(j in 1:SIZE[i]){
+    Rname <- df.sample$GroupName[which.max(df.sample$CategoryName == as(e@items,"list")[[i]][j])]
+    Rname2 <- trimws(as.character(Rname), which = c("both", "left", "right"))
+    dimnames(constraintM)[[1]][r] <- Rname2
+    dimnames(constraintM)[[2]][i] <-paste0("subSet",i)
+    constraintM[r,i] <- 1
+    r <- r + 1
+    }
+}
+constraintM[is.na(constraintM)] <- 0
+#collapse duplicate rows
+CM <- t(sapply(by(constraintM,rownames(constraintM),colSums),identity))
+C <- rbind("SIZE" = size(e@items),CM)
+Indexes <- which(C!=0,arr.ind = T,useNames = F)
+SC <- as(C,"dgCMatrix")
+
+#######################
+#     Optimization    #
+#######################
+
+# preparing the model
+lp <- glpkAPI::initProbGLPK()
+gap = 1e-4
+# model data
+# nrows <- 1
+# ncols <- length(Result$frame1$M)
+nrows <- SC@Dim[1]
+ncols <- SC@Dim[2]
+
+# constraint matrix construction
+#ne <- length(Result$frame1$M)
+ne <- length(SC@x)
+#lines
+#ia <- c(rep(1,length(Result$frame1$M)))
+ia <- as.vector(Indexes[,1])
+#columns
+#ja <- c(1:length(Result$frame1$M))
+ja <- as.vector(Indexes[,2])
+#values of constrint matrix
+#ar <- size(e@items)
+ar <- as.vector(SC@x)
+
+# objective function nota núna Result3 með logariðmísku vörpuninni
+obj <- Result3$frame1$M3
+
+# upper and lower bounds of the rows
+rlower <- c(0,rep(rep(0,(nrows-1))))
+numberOfGroups <- nrow(SC)
+rupper <- c(numberOfGroups,rep(1,(nrows-1)))
+# upper and lower bounds of the columns, non at tha moment
+clower <- c(rep(0,length(Result3$frame1$M3)))
+cupper <- clower
+# direction of optimization
+glpkAPI::setObjDirGLPK(lp, GLP_MAX)
+# add rows and columns
+glpkAPI::addRowsGLPK(lp, nrows)
+glpkAPI::addColsGLPK(lp, ncols)
+#lower bound columns
+type <- rep(GLP_LO, length(Result3$frame1$M3))
+#setColBndGLPK(lp, c(1:ncols), clower, cupper, obj)
+glpkAPI::setColsBndsObjCoefsGLPK(lp, c(1:ncols), clower, cupper, obj, type)
+glpkAPI::setRowsBndsGLPK(lp, c(1:nrows), rlower, rupper)
+#Set variable types, this case it is binary
+for(j in 1:ncols){
+  glpkAPI::setColKindGLPK(lp,j,GLP_BV)
+}
+# load constraint matrix
+glpkAPI::loadMatrixGLPK(lp, ne, ia, ja, ar)
+# solve Binary Variable problem, 1 relaxed problem
+glpkAPI::setMIPParmGLPK(PRESOLVE, GLP_ON)
+glpkAPI::setMIPParmGLPK(MSG_LEV, GLP_MSG_ALL)
+glpkAPI::setMIPParmGLPK(MIP_GAP , gap)
+glpkAPI::solveMIPGLPK(lp)
+# retrieve the results
+glpkAPI::mipColsValGLPK(lp)
+glpkAPI::mipObjValGLPK(lp)
+#
+optimal <- as.character(as.logical(mipColsValGLPK(lp)))
+glpkAPI::delProbGLPK(lp)
+```
+
+\setboolean{@twoside}{false}
+\includepdf[pages=-]{backcover.pdf}
