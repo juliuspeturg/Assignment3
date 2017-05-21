@@ -25,6 +25,7 @@ header-includes:
    - \usepackage{appendix}
    - \usepackage{pdfpages}
    - \usepackage{transparent}
+   - \usepackage{enumitem}
 
 output:
   pdf_document:
@@ -404,7 +405,7 @@ glpkAPI::delProbGLPK(lp)
 
 #Introduction
 
-From the introduction of the first electronic payment terminals by Visa in 1979, \cite{Estep} to the more recent cloud-based Point-of-sale (POS) systems, the amount of sales data from retail stores has vastly increased. As an example, the retail corporation Walmart has collected historical sales data using data warehousing since 1990 \cite{Wailgrum}. POS data, often referred to as *basket data*, along with information from membership cards issued by retailers can provide valuable insights into various parts of the retailing operations. By using data mining and machine learning, retail companies have been able to analyze these large datasets and by that aquire a good understanding of their business and provide better customer service.
+From the introduction of the first electronic payment terminals by Visa in 1979 \cite{Estep} to the more recent cloud-based Point-of-sale (POS) systems, the amount of sales data from retail stores has vastly increased. As an example, the retail corporation Walmart has collected historical sales data using data warehousing since 1990 \cite{Wailgrum}. POS data, often referred to as *basket data*, along with information from membership cards issued by retailers can provide valuable insights into various parts of the retailing operations. By using data mining and machine learning, retail companies have been able to analyze these large datasets and by that aquire a good understanding of their business and provide better customer service.
 
 \FloatBarrier
 
@@ -420,7 +421,7 @@ Retailers that do not have a strong online presence have had to rely on analytic
 
 The term market basket analysis in general refers to association rule learning. Association rule learning is used to discover relationships between products in a large database of transactional data. These relationships can then be used to aid in predicting customers future shopping intent, potential cross-sell, product assortment and other vital retail management decisions. 
 
-Although the topic dates further back than 1993, the paper "Mining Association Rules between Sets of Items in Large Databases" \cite{Agrawal1993} is consider one of the starting points of these types of analysis. In this paper the general concept of association rule learning was proposed. However due to exponential execution time further improvement were needed to make association rule learning a viable method in practical examples. This improvement was proposed with the Apriori algorithm which was first introduced in 1994 in the groundbreaking paper "Fast Algorithm for Mining Association Rules" \cite{apriori}. In this paper a new approach is taken to producing sets of association rules which scales linearly with database size both in respect to number of transactions and number of product offered by the retailer. Today this algorithm still provides the foundation for many models when analyzing basket data. As stated in the 1994 paper one of the things to consider is the fact that the resulting association rules discovered by the algorithm are based on frequency and are probabilistic in nature and the results are quantitative but not qualitative. The algorithm presented in the paper therefore does not qualify the "usefulness" \cite{apriori} nor the "interestingness" \cite{apriori} of discovered rules. These two terms refer to how useful the association rules are, the Apriori algorithm might for example find a strong association between any item sold at a particular store and carrier bags. This association would not be considered highly useful to the person doing the analysis. This means that there needs to be a human interaction in the loop to validate the associations discovered.
+Although the topic dates further back than 1993, the paper "Mining Association Rules between Sets of Items in Large Databases" \cite{Agrawal1993} is consider one of the starting points of these types of analysis. In this paper the general concept of association rule learning was proposed. However due to exponential execution time, further improvement were needed to make association rule learning a viable method in practical examples. This improvement was proposed with the Apriori algorithm which was first introduced in 1994 in the groundbreaking paper "Fast Algorithm for Mining Association Rules" \cite{apriori}. In this paper a new approach is taken to producing sets of association rules that scale linearly with database size, both in respect to number of transactions and number of product offered by the retailer. Today this algorithm still provides the foundation for many models when analyzing basket data. As stated in the 1994 paper, one of the things to consider is the fact that the resulting association rules discovered by the algorithm are based on frequency and are probabilistic in nature and the results are quantitative but not qualitative. The algorithm presented in the paper therefore does not qualify the "usefulness" \cite{apriori} nor the "interestingness" \cite{apriori} of discovered rules. These two terms refer to how useful the association rules are. The Apriori algorithm might for example find a strong association between any item sold at a particular store and carrier bags. This association would not be considered highly useful to the person doing the analysis. This means that there needs to be a human interaction in the loop to validate the associations discovered.
 
 The following definitions are some concepts that will be referred to throughout the thesis and form the basis of what is often referred to as conventional market basket analysis.
 
@@ -441,7 +442,7 @@ Each rule has a left-hand-side (LHS) sometimes called *antecedent* and a right-h
 \{TV,Audio System\} \Rightarrow \{Audio Cable\}
 \end{equation*}
 
-In other words if a customer has both a TV and Audio system in his basket it will probably lead to a purchase of an audio cable. The basket were referring to does not need to be constrained to a physical basket at a store but can refer to a customers purchase history. Buy using a customers history we can predict future purchases using association rule learning. And the reccomandation made to the customer would be the RHS of a discovered rule. The drawback of using this method is the fact that we can only predict for customers that have purchased items that are frequent in the store if the analysis is done at item-level.
+In other words if a customer has both a TV and an audio system in his basket, it will probably lead to a purchase of an audio cable. The basket we are referring to does not need to be constrained to a physical basket at a store but can refer to a customers purchase history. By using a customers history we can predict future purchases using association rule learning. The recommendation made to the customer would be the RHS of a discovered rule. The drawback of using this method is the fact that we can only predict for customers that have purchased items that are frequent in the store if the analysis is done at item-level.
 
 \FloatBarrier
 
@@ -453,7 +454,7 @@ Support \cite{hahsler2007introduction} is the measurement of how frequently an i
 supp(X) = \frac{|\{ t \in T;X \subseteq t \}|}{|T|}
 \end{equation}
 
-When doing association rule learning we need to set a threshold for a *minimum support*. This minimum support is user defined and is a threshold to what is considered a frequent item. The threshold varies between retailers and type of stores, as what might be considered frequent at for example a sports retailer might not be relatively frequent when analyzing supermarket data. The threshold will determine how often we need to scan the database. Support can be used to identify popular products as seen in Fig.\ref{fig:itemfrequency} but as it hold no monetary value, further analysis is needed to draw valuable information from the support measure.
+When doing association rule learning we need to set a threshold for a *minimum support*. This minimum support is user defined and is a threshold to what is considered a frequent item. The threshold varies between retailers and type of stores, and what might be considered frequent at for example a sports retailer might not be relatively frequent when analyzing supermarket data. The threshold will determine how often we need to scan the database. Support can be used to identify popular products as seen in Fig.\ref{fig:itemfrequency} but as it holds no monetary value, further analysis is needed to draw valuable information from the support measure.
 
 ```{r itemfrequency, echo=F,fig.cap="Item Support plot",fig.align='left',results="hide",fig.height=4}
 
@@ -503,20 +504,20 @@ ggplot(FQ2, aes(x = CategoryName,y = Freq,fill=CategoryName)) + geom_bar(stat = 
 
 #### Confidence
 
-Confidence \cite{hahsler2007introduction} is the measurement of how frequently an association rule is found to be true, in other word, of all the baskets containing itemset *X* (LHS of rule), how many of those baskets contain the RHS of a particular rule *Y*. simply the probablitity of tha basket containg *Y* given it contains *X*
+Confidence \cite{hahsler2007introduction} is the measurement of how frequently an association rule is found to be true. In other words, of all the baskets containing itemset *X* (LHS of rule), how many of those baskets contain the RHS of a particular rule *Y*. simply the probablitity of thE basket containing *Y* given it contains *X*
 
 \begin{equation} \label{confidence}
 Conf(X \Rightarrow Y) = P(Y|X)= \frac{Supp(X \cup Y)}{Supp(X)}
 \end{equation}
 
-Although the equation is simple it is very useful in product recommendation for example in online shopping, where the customer has selected a product we are able to suggest other complementary products based on high confidence value. The reader might be familiar with the term "customers who bought this item also bought" and "frequently bought together" which is often based on support and confidence calculations in systems that do not rely on complex recommendation engines like collaborative filtering.
+Although the equation is simple, it is very useful in product recommendation for example in online shopping, where the customer has selected a product we are able to suggest other complementary products based on high confidence value. The reader might be familiar with the term "customers who bought this item also bought" and "frequently bought together" which is often based on support and confidence calculations in systems that do not rely on complex recommendation engines like collaborative filtering.
 
 \FloatBarrier
 
 #### Lift
 
 Lift \cite{hahsler2007introduction} is a measurement of increase in likelihood of the basket containing Y if it already contains X. The lift number is on the scale $\lbrack 0,\infty \rbrack$. If the Lift number is 1 or less the itemsets are considered independent of each other.
-Lift is therefor is a very basic measurer of "usefulness" or "interestingness" of rules and the higher the lift number the higher the strength of the association rule. 
+Lift is therefore a very basic measure of "usefulness" or "interestingness", of rules and the higher the lift number is, the higher the strength of the association rule. 
 
 \begin{equation} \label{lift}
 Lift(X \Rightarrow Y) = \frac{Supp(X \cup Y)}{Supp(X) \times Supp(Y)}
@@ -587,7 +588,7 @@ rm(plebbi)
 
 #### Summary
 
-The terms introduced above are the results from what is usually refer to on the topic of conventional market basket analysis. These basic equations can give god insight to the data being analyzed, they do have their pros and cons as listed below.
+The terms introduced above are the results from what is usually refered to on the topic of conventional market basket analysis. These basic equations can give good insight to the data being analyzed, they do have their pros and cons as listed below.
 
 \setstretch{1}
  \begin{itemize}
@@ -627,14 +628,14 @@ The terms introduced above are the results from what is usually refer to on the 
 
 Various papers have been written on the topic of "usefulness" and "interestingness" of association rules in attempt to draw stronger conclusions from basket analysis and in return reduce the human validation needed in the loop which often can be subjective. These two metrics can prove very useful when determining product assortment and advertising campaigns. As we saw in the chapter above, the basic concepts of basket analysis does not take into account the revenue generated from various results from the analysis. The objective of the thesis is to explore what has been done in regards of revenue generated when it comes to qualifying the frequent rules discovered and to develop a general model that qualifies frequent items on their ability to sell complimentary items. 
 
-Our general model will extract Items belonging to the LHS of rules with the highest profit potential with respect to cross selling. By focusing on this topic we believe that the results from the study will not only be useful when it comes to promotional campaigns and product assortment but can give vital information when it comes to other management decisions like replenishment programs and which items are suitable for discontinuation without having big impact on sales of the remaining products in the store. We intend to generate a flexible model that is general in nature and not restricted to the data used in the study. The resulting output from the model will be frequent items with their monetary value including revenues generated by cross sell. With the monetary value will be a breakdown of where these added revenues were generated from. With the value of each frequent itemset established, the model will generate a hit list of the most valuable frequent itemsets suitable for promotional purposes. The data used in the development was supplied by a local electronics retailer
+Our general model will extract Items belonging to the LHS of rules with the highest profit potential with respect to cross selling. By focusing on this topic we believe that the results from the study will not only be useful when it comes to promotional campaigns and product assortment but can give vital information when it comes to other management decisions like replenishment programs and which items are suitable for discontinuation without having big impact on sales of the remaining products in the store. We intend to generate a flexible model that is general in nature and not restricted to the data used in the study. The resulting output from the model will be frequent items with their monetary value, including revenues generated by cross sell. The monetary value will be a breakdown of where these added revenues were generated from. With the value of each frequent itemset established, the model will generate a hit-list of the most valuable frequent itemsets suitable for promotional purposes. The data used in the development was supplied by a local electronics retailer.
 
  
 \FloatBarrier
 
-## Thesis layout
+## Thesis Layout
 
-The thesis layout follows the conventional IMRaD structure known in scientific writing. The following chapters after the introduction will be broken down in the following manner. Chapter 2 will start by giving detailed introduction to the data used in the project. The later part of Chapter 2 will be focused on the analytical methods used in the study. Chapter 3 will cover the results from the model proposed in the thesis, thereafter follows Chapter 4 where we will discuss results and room for improvement on the model as well as some further extensions. 
+The thesis layout follows the conventional IMRaD structure, known in scientific writing. The following chapters after the introduction will be broken down in the following manner. Chapter 2 will start by giving detailed introduction to the data used in the project. The later part of Chapter 2 will be focused on the analytical methods used in the study. Chapter 3 will cover the results from the model proposed in the thesis, thereafter follows Chapter 4 where we will discuss results and room for improvements in the model. 
 
 \FloatBarrier
 
@@ -644,17 +645,17 @@ The thesis layout follows the conventional IMRaD structure known in scientific w
 
 ## Data and Pre-processing
 
-One of the deciding factors of how well a model performs lies in the preparation of data prior to any analytical modeling. If the input data is inaccurate and unreliable we cannot expect to extract reliable output from the model. As we were supplied with unadjusted raw basket data from our data supplier we will have to perform a substantial amount of preprocessing. The following subchapter will define common methods of data preprocessing that were used during the iterative development of our model.   
+One of the deciding factors of how well a model performs lies in the preparation of data prior to any analytical modeling. If the input data is inaccurate and unreliable we cannot expect to extract reliable output from the model. As we were supplied with unadjusted raw basket data from our data supplier, we will have to perform a substantial amount of preprocessing. The following subchapter will define common methods of data preprocessing that were used during the iterative development of our model.   
 
 \FloatBarrier
 
 ### Store Hierarchy
 
-To be able to do any data analysis it is essential to have a good understanding of the structure behind the data that is being worked on. In the retail industry it is a common practice to break the store down into manageable sections as managing all the items available in the store as a whole is near impossible when available products are counted in thousands. These sections of the store have products aggregated together with similar attributes and features. Various sections are than branched together to various higher levels and form a tree-structure. Depending on the store size and product range the levels can vary in both number and size. It is a common practice in the retail industry hire category managers that are responsible for managing a limited number of braches within the store hierarchy. Their responsibility include replenishment of items, selecting products for promotions as well as selecting products that are suitable for discontinuation and put on sale and other day to day management decisions. 
+To be able to do any data analysis, it is essential to have a good understanding of the structure behind the data that is being worked on. In the retail industry it is a common practice to break the store down into manageable sections, as managing all the items available in the store as a whole is near impossible when available products are counted in thousands. These sections of the store have products aggregated together with similar attributes and features. Various sections are then branched together to various higher levels and form a tree-structure. Depending on the store size and product range the levels can vary in both number and size. It is a common practice in the retail industry to hire category managers that are responsible for managing a limited number of branches within the store hierarchy. Their responsibility include replenishment of items, selecting products for promotions, as well as selecting products that are suitable for discontinuation and put on sale and other day to day management decisions.  
 
-Present at the electronics retailer in this study are three levels of aggregation. At the bottom level are individual items sold in the store. These items then belong to an Item-Category which aggregates these similar items. Those Item-Categories then belong to an Item-Group, these item groups aggregate further together categories of similar attributes. A simple diagram of this store hierarchy can be seen in Fig.\ref{fig:marker} to get a better understanding of what data we have in hand. Fig.\ref{fig:marker} only show a simplification of the store with two Item-groups, four Item-categories and eight items. The store has however more than 20.000 individual Items (products), over 400 Item-Categories and around 160 Item-Groups.
+Present at the electronics retailer in this study are three levels of aggregation. At the bottom level are individual items sold in the store. These items then belong to an Item-Category which aggregates these similar items. Those Item-Categories then belong to an Item-Group, these item groups aggregate further together categories of similar attributes. A simple diagram of this store hierarchy can be seen in Fig.\ref{fig:marker} to get a better understanding of what data we have in hand. Fig.\ref{fig:marker} only shows a simplification of the store with two Item-groups, four Item-categories and eight items. The store has however more than 20.000 individual Items (products), over 400 Item-Categories and around 160 Item-Groups.
 
-All the analysis in this study will be done on the top two levels in the store, Item-group and Item-Category. We are not able to analyses the data down on level 3 due to sparseness in the data at that level. For example a mobile phones can have a manufacturer and type but come in various configurations in terms of specifications like internal memory, camera specifications and color. So finding frequent items on that level proves extremely hard.
+All the analysis in this study will be done on the top two levels in the store, Item-group and Item-Category. We are not able to analyse the data down to level 3 due to sparseness in the data at that level. For example a mobile phones can have a manufacturer and type but come in various configurations in terms of specifications like internal memory, camera specifications and color. So finding frequent items on that level proves extremely hard.
 
 
 \begin{figure}
@@ -709,15 +710,15 @@ All the analysis in this study will be done on the top two levels in the store, 
 
 ### Relational Date Model
 
-The POS system present at the checkout sends raw data from each purchase transaction to be stored in a data warehouse. For this project we were supplied with data spanning a two year period dating from December 2014 to 2016 from three store locations. This data was transferred to a local server that we were able query during the development phase of the project. The data is structured in a conventional relational model\cite{codd1970relational} which can be queried using SQL. To extract data from this database we had to construct a relation model as seen in Fig.\ref{fig:schema} with all the appropriate keys to join the tables. A description of the tables are below.
+The POS system present at the checkout sends raw data from each purchase transaction to be stored in a data warehouse. For this project we were supplied with data spanning a two year period dating from December 2014 to 2016 from three store locations. This data was transferred to a local server that we were able to query during the development phase of the project. The data is structured in a conventional relational model\cite{codd1970relational} which can be queried using SQL. To extract data from this database we had to construct a relation model as seen in Fig.\ref{fig:schema} with all the appropriate keys to join the tables. A description of the tables are below.
 
-
-\begin{itemize}
-     \item \textbf{TransactionLine:} Is the main table in the database. All the items sold at the retailer will have a single line in this table containing the following information. A transaction identifier that identifies what transaction the item sold belongs to. If the customer is a part of the membership program his unique customer number is attached to the item line. The item quantity is attached to each line in the table and is a nonzero positive integer. The Net amount is the total price of each line in the table and depends on item quantity. The cost amount it the purchase price of the item but does not include inventory cost associated to the item. Item category code identifies which item-category at level 2 the item belongs to and the item group code identifies which item group at level 1 the items belongs to. Each item is sold from a store location and is identified by the item store number.  
-\end{itemize}
 
 \begin{itemize}
      \item \textbf{ItemCategoryCode:} Contains a unique identifying number for each Item-Category. Each unique ID than has name that is descriptive of the items contained in that category  
+\end{itemize}
+
+\begin{itemize}
+     \item \textbf{Item:} Contains a unique identifying number for each item and detailed description of the item which belongs to that item number.  
 \end{itemize}
 
 \begin{itemize}
@@ -725,16 +726,19 @@ The POS system present at the checkout sends raw data from each purchase transac
 \end{itemize}
 
 \begin{itemize}
-     \item \textbf{Item:} Contains a unique identifying number for each item and detailed description of the item which belongs to that item number.  
+     \item \textbf{Store:} Contains a unique identifying number for each Store. Each unique ID than has description of store physical location.  
+\end{itemize}
+
+\begin{itemize}
+     \item \textbf{TransactionLine:} Is the main table in the database. All the items sold at the retailer will have a single line in this table, containing the following information. A transaction identifier that identifies what transaction the item sold belongs to. If the customer is a part of the membership program his unique customer number is attached to the item line. The item quantity is attached to each line in the table and is a nonzero positive integer. The Net amount is the total price of each line in the table and depends on item quantity. The cost amount, if the purchase price of the item but does not include inventory cost associated to the item. Item category code identifies which item-category at level 2 the item belongs to and the item group code identifies which item group at level 1 the items belongs to. Each item is sold from a store location and is identified by the item store number.  
 \end{itemize}
 
 
 ```{r schema, echo=F,eval=T,results='asis',fig.cap=" Relational model of the database",fig.align='center',out.height='.3\\textheight',out.width='.99\\textwidth'}
-knitr::include_graphics("export7.pdf")
+knitr::include_graphics("export8.pdf")
 ```
 
-When aggregating data from the database we have a lot of flexibility. For example we can query the server and extract all the individual POS transactions grouped by their transaction ID´s or on the customer ID´s. By taking a look at Fig.\ref{fig:Basketsize} we can see the basket size of the two scenarios. One obvious thing we can see is that when we only group by the transaction ID over 65% of the transaction include only one item which is far from optimal when it comes to mining for frequent itemsets. Luckily we are able to group by customer ID due to the membership program present at the retailer, as seen in Fig.\ref{fig:Basketsize} right. By grouping the data on Customer ID we can see a drastic change in basket size vital to the analysis in later steps in the project. The basket size might be too large since we are aggregating the whole purchasing history to each customer ID but we use a method of sampling described in \ref{sssec:datasampling} to reduce this basket size. Since all the development was done in *R* \cite{Rprograming} we established a live connection from *R* directly to the database through the RODBC package \cite{rodbc}.
-
+When aggregating data from the database we have a lot of flexibility. For example we can query the server and extract all the individual POS transactions grouped by their transaction ID´s or on the customer ID´s. By taking a look at Fig.\ref{fig:Basketsize} we can see the basket size of the two scenarios. One obvious thing we can see is that when we only group by the transaction ID over 65% of the transaction include only one item, which is far from optimal when it comes to mining for frequent itemsets. Luckily we are able to group by customer ID due to the membership program present at the retailer, as seen in Fig.\ref{fig:Basketsize} right. By grouping the data on Customer ID we can see a drastic change in basket size vital to the analysis in later steps of the project. The basket size might be too large since we are aggregating the whole purchasing history to each customer ID, but we use a method of sampling described in \ref{sssec:datasampling} to reduce this basket size. Since all the development was done in *R* \cite{Rprograming} we established a live connection from *R* directly to the database through the RODBC package \cite{rodbc}.
 
 ```{r Basketsize, echo=F,fig.width=7,fig.cap=list("Basket size when grouping by Transaction ID (left) and customer ID (right). The basket size on the x-axis is cut of at 8 items. However both the plots would continue tapering of exponentially beyond 8 items."), fig.height=3.5,fig.scap=list("Basket size when grouping by Transaction ID and customer ID"),fig.align='center'}
 
@@ -803,21 +807,21 @@ multiplot(xx,yy,cols = 2)
 
 ### Deleting Data
 
-Some parts of the data can be removed manually from the dataset to increase the strength of the signal we are searching after. Some are more obvious than other for example if we look back at Fig.\ref{fig:Basketsize} we see that a large portion of the data still consists of the "single visit single item" shopping pattern. Baskets containing these single items do not have a significant value to the objective of identifying items of high potential of cross-sell since those transactions only contain single items. If we look at Fig.\ref{fig:schema} we can see that the retailer keeps track on the type of customer taking part in each transaction. However some of the transactions are not a part of their membership program and therefore cannot be aggregated to produce a customer transaction history and therefore are not useful for the modeling done in this study. Other noisy transactions can be spotted without using any advanced filtering, like extremely large transactions containing a high number of the same items. These transitions are often due to companies buying large quantities for gifts for their employees during the holiday season but do not reflect the average shopper in question. 
+Some parts of the data can be removed manually from the dataset to increase the strength of the signal we are searching for. Some are more obvious than other for example if we look back at Fig.\ref{fig:Basketsize} we see that a large portion of the data still consists of the "single visit single item" shopping pattern. Baskets containing these single items do not have a significant value to the objective of identifying items that have high potential of cross-sell, since those transactions only contain single items. If we look at Fig.\ref{fig:schema} we can see that the retailer keeps track on the type of customer taking part in each transaction. However some of the transactions are not a part of their membership program and therefore cannot be aggregated to produce a customer transaction history and therefore are not useful for the modeling done in this study. Other noisy transactions can be spotted without using any advanced filtering, like extremely large transactions containing a high number of the same items. These transitions are often due to companies buying large quantities used as gifts for their employees during the holiday season, but do not reflect the average shopper in question. 
 
 \FloatBarrier
 
 ### Scaling and Transformation
 
-One of the things that need to be considered when doing any data analysis is the question of whether there should be done scaling or transformations prior to further analysis. When dealing with conventional supermarket data the need for scaling might not be highly relevant since the variance of prices between categories is relatively low. However in our case we have a large price difference between categories, varying from low priced DVD´s to expensive LCD TV´s. 
+One of the things that needs to be considered when doing any data analysis is the question of whether scaling or transformations prior to further analysis should be done. When dealing with conventional supermarket data the need for scaling might not be highly relevant since the variance of prices between categories is relatively low. However in our case we have a large price difference between categories, varying from low priced DVD´s to expensive LCD TV´s. 
 
-Eq.$\eqref{norm}$ is the well-known standard Normalization with notation adapter to our data where $\mu_{category_{i}}$ is the average price of the category the item belongs to. $\sigma_{category_{i}}$ is the standard deviation of prices within that same category. The price of the item prior to scaling is noted with *p* and *p'* is the normalized price. The standard normalization is widely used in regression model as well as predictive modeling \cite{apm} and is used to normalize predictors around zero with a standard deviation of 1. Doing this to our price data would not make a lot of sense as we would simply doing a price equalization of all the categories in the store which would change our model in \ref{sssec:reviced} to a pure probabilistic model which is not our goal.
+Eq.$\eqref{norm}$ is the well-known standard Normalization with notation adapter to our data where $\mu_{category_{i}}$ is the average price of the category the item belongs to. $\sigma_{category_{i}}$ is the standard deviation of prices within that same category. The price of the item prior to scaling is noted with *p* and *p'* is the normalized price. The standard normalization is widely used in regression model, as well as predictive modeling \cite{apm} and is used to normalize predictors around zero with a standard deviation of 1. Doing this to our price data would not make a lot of sense as we would simply be doing a price equalization of all the categories in the store which would change our model in \ref{sssec:reviced} to a pure probabilistic model which is not our goal.
 
 \begin{equation} \label{norm}
 p' = \frac{p - \mu_{category_{i}}}{\sigma_{category_{i}}}
 \end{equation}
 
-Log-transformation is another option we have in regards of data preprocessing. The benefits of using log-transformation is that we get non zero positive prices but reduce skewness due to outliers in the data as can be seen in Fig.\ref{fig:logtransHDMI}. This method of transformation was considered and tested in early stages of model development as seems reasonable at first glance and has a side benefit of simplifying calculations. There is however in big flaw in using Log-transformation and that is, each category has a different skewness in prices so after transforming the prices the order of average prices of all categories had changed and so a category that had an average priced lower than the total average price in the store had changed to above average and vice versa. For those reasons no scaling nor transformation was applied to the data and the remaining modeling was done on raw prices.
+Log-transformation is another option we have in regards of data preprocessing. The benefits of using log-transformation is that we get non zero positive prices, but reduce skewness due to outliers in the data as can be seen in Fig.\ref{fig:logtransHDMI}. This method of transformation was considered and tested in the early stages of model development, as seems reasonable at first glance and has a side benefit of simplifying calculations. There is however in big flaw in using Log-transformation and that is, each category has a different skewness in prices so after transforming the prices, the order of average prices for all categories had changed, and so a category that had an average price lower than the total average price in the store had changed to above average and vice versa. For those reasons no scaling nor transformation was applied to the data, and the remaining modeling was done on raw prices.
 
 ```{r logtransHDMI, echo=F,fig.cap=list("Log transformation of the prices of HDMI cables and LCD TV over 50-inches"),fig.align='center'}
 
@@ -891,11 +895,11 @@ multiplot(a1,a2,a3,a4,cols = 2)
 
 ### Translation
 
-The database in this project was in Icelandic language and we needed to translate parts of the database into English. This provided a good opportunity to connect R to the available Google Application programming interfaces (API). As well as translation, Google API offers a large variety API´s on machine learning and analytics which can be useful to connect to when doing large scale analytics as well as simply reducing development time by using "of the shelf" solutions. The binding to Google API was established using the translateR \cite{Translate} package in R which takes strings of data from the local R environment sends to Google API services and returns the strings in the translated language of choice.
+The database in this project was in Icelandic, and we needed to translate parts of the database into English. This provided a good opportunity to connect R to the available Google Application programming interfaces (API). As well as translation, Google API offers a large variety API´s on machine learning and analytics which can be useful to connect to when doing large scale analytics as well as simply reducing development time by using "of the shelf" solutions. The binding to Google API was established using the translater \cite{Translate} package in R, which takes strings of data from the local R environment sends to Google API services and returns the strings in the translated language of choice.
 
 ## Frequent Itemset Mining
 
-Discovering frequent itemsets in an important step in our model. This step is intended to limit the items that will be explored further in proceeding steps. Without any limitations we would have to explore the cross selling of all possible itemsets in the store which simply is not a viable option. By limiting our model to only frequent itemsets we are able to focus the analysis on items that are generating the most revenues for the retailers. We used two methods to discovering frequent itemsets.  which are described in the following two subsections. To make this thesis somewhat self-containing we will give a brief overview of how the frequent item sets are generated. 
+Discovering frequent itemsets is an important step in our model. This step is intended to limit the items that will be explored further in proceeding steps. Without any limitations we would have to explore the cross selling of all possible itemsets in the store which simply is not a viable option. By limiting our model to only frequent itemsets we are able to focus the analysis on items that are generating the most revenues for the retailers. We used two methods to discover frequent itemsets which are described in the following two subsections. To make this thesis somewhat self-containing we will give a brief overview of how the frequent item sets are generated. 
 
 For this part of the project an R package called arules\cite{arulesmanual} will be used. This package provides an interface to the *C* implementation of the of the association mining algorithms Apriori and Eclat by C.Borgelt \cite{CB}. The results from the *C* interface are delivered to the R environment as a large sparse matrix which are used for further calculations in our model.
 
@@ -904,7 +908,7 @@ For this part of the project an R package called arules\cite{arulesmanual} will 
 ### The Apriori Algorithm
 \label{sssec:apri}
 
-In \cite{apriori} the Apriori algorithm in introduced and with it a detailed description of how association rules are generated with it. The main use of the algorithm in our case will be to mine for frequent itemsets. The algorithm uses a step vice iterative approach which is best describe with a small example addapted from \cite{apriori}: In the first step all the items database are considers candidates for frequent items, see Table \ref{table:demodata}. The databased is then scanned and there frequency counted, see Table \ref{table:candidat}. Assuming we have a minimum support of 50\% to be considered frequent, it corresponds to having a minimum count of 2. The frequent itemsets in the first step are therefore in Table \ref{table:frequent}. For each proceeding step in the algorithm the new candidate set is increase by one item in size. The items added are the item that are frequent in the previous step.
+In \cite{apriori} the Apriori algorithm is introduced and with it a detailed description of how association rules are generated. The main use of the algorithm in our case will be to mine for frequent itemsets. The algorithm uses a step vice iterative approach which is best described with a small example adapted from \cite{apriori}: In the first step, all the items database are considered candidates for frequent items, see Table \ref{table:demodata}. The databased is then scanned and their frequency counted, see Table \ref{table:candidat}. Assuming we have a minimum support of 50\% to be considered frequent, it corresponds to having a minimum count of 2. The frequent itemsets in the first step are therefore in Table \ref{table:frequent}. For each proceeding step in the, the new candidate set is increase by one item in size. The items added are the item that are frequent in the previous step.
 
 ```{r,echo=F,eval=T}
 
@@ -1013,13 +1017,13 @@ print(julli,floating=FALSE,include.rownames=FALSE,latex.environments = "center")
 \end{minipage}
 \end{table}
 
-The third candidate set would be the set $\text{\{a,b,c\}}$ according to Table \ref{table:frequent2} since only c could be added to the set $\text{\{a,b\}}$,  this new candidate set would not exceed the limiting threshold for a support of 2 transactions and therefore not count as frequent. This is the stopping condition for the algorithm and the frequent itemset in previous steps are the output from the algorithm. This is a very efficient way to mine for frequent itemsets and in particular this way of bottom up approach with a candidate generation in each set drastically reduces the number of scans over the database. If we were to use simple heuristics of counting all possible combinations of products as itemsets we would have to scan the database $2^i$ times, where *i* is the number of items in the database. Generating association rules from the frequent items generated is quite straight forward since each subset of a frequent itemset is frequent as well due to how they are generated, so for example the itemset $\text{\{a,b\}}$ has two items and yields two rules $\{a \Rightarrow  b\}$ and $\{b \Rightarrow a\}$ for which the confidence and lift can then be calculated.
+The third candidate set would be the set $\text{\{a,b,c\}}$ according to Table \ref{table:frequent2} since only c could be added to the set $\text{\{a,b\}}$.  This new candidate set would not exceed the limiting threshold for a support of 2 transactions and therefore not counted as frequent. This is the stopping condition for the algorithm and the frequent itemset in previous steps are the output from the algorithm. This is a very efficient way to mine for frequent itemsets and in particular this way of bottom up approach with a candidate generation in each set, drastically reduces the number of scans over the database. If we were to use simple heuristics of counting all possible combinations of products as itemsets, we would have to scan the database $2^i$ times, where *i* is the number of items in the database. Generating association rules from the frequent items generated is quite straight forward since each subset of a frequent itemset is frequent as well due to how they are generated, so for example the itemset $\text{\{a,b\}}$ has two items and yields two rules $\{a \Rightarrow  b\}$ and $\{b \Rightarrow a\}$ for which the confidence and lift can then be calculated.
 
 \FloatBarrier
 
 ### The Eclat Algorithm
 
-The search space for frequent items can be displayed in a hasse diagram as in Fig.\ref{fig:hasse} which includes all possible frequent itemsets excluding the empty set. The Apriori algorithm described above uses a so called breadth-first \cite{CB,borgelt2003efficient} approach when traversing through the search space i.e. first we calculate the frequency of the 1-items itemsets and then for 2-item itemsets and proceed further up the hasse diagram. In \cite{Eclatt} the Eclat algorithm is proposed that differs from Apriori in two way. The first is the transformation of the transactional database from the format seen in Table \ref{table:demodata} to a what is usually called a *long format* where transaction ID´s are aggregated to the items in the database as seen in Table \ref{table:long}. The second difference is how the algorithm traverses through the search space as described bellow
+The search space for frequent items can be displayed in a hasse diagram as in Fig.\ref{fig:hasse} which includes all possible frequent itemsets excluding the empty set. The Apriori algorithm described above, uses a so called breadth-first \cite{CB,borgelt2003efficient} approach when traversing through the search space, i.e. first we calculate the frequency of the 1-items itemsets and then for 2-item itemsets and proceed further up the hasse diagram. In \cite{Eclatt} the Eclat algorithm is proposed that differs from Apriori in two ways. First is the transformation of the transactional database from the format seen in Table \ref{table:demodata} to a what is usually called a *long format* where transaction ID´s are aggregated to the items in the database as seen in Table \ref{table:long}. The second difference is how the algorithm traverses through the search space as described below.
 
 ```{r,echo=F,eval=T}
 
@@ -1043,7 +1047,7 @@ print(julli,floating=FALSE,include.rownames=FALSE)
 ```
 \end{table}
 
-Calculating frequency of itemsets larger then one simply involves finding intersecting transaction ID´s between items in Table \ref{table:long}. But intersecting all possible items is an extremely costly calculation. To reduce this calculation time the Eclat algorithm uses a so called Depth-first \cite{CB,borgelt2003efficient} approach to finding frequent itemsets as highlighted with the blue path in \ref{fig:hasse} this path proceeds from the prefix a. When the largest possible itemset has been found from the same prefix it back steps down and proceeds to the next brach from the same prefix. The goal of the algorithm is to find the largest itemset as fast as possible do to the *lemma* presented in \cite{Eclatt} that states that for that all subsets of a frequent itemset are frequent as well. This algorithm usually exceeds Apriori in calculation time. Early in the development phase of our project some benchmarking were done on both the algorithms were tested and the Eclat performed slightly better in our case and therefore we selected Eclat for further use. There are however some cases where some cases where Apriori can perform similar to Eclat and a general rule of thumb is to use Eclat when item number is relatively high compared to the transaction count but when item number increases differences in calculation times varies little. 
+Calculating frequency of itemsets larger then one, simply involves finding intersecting transaction ID´s between items in Table \ref{table:long}. But intersecting all possible items is an extremely costly calculation. To reduce this calculation time, the Eclat algorithm uses a so called Depth-first \cite{CB,borgelt2003efficient} approach in finding frequent itemsets as highlighted with the blue path in \ref{fig:hasse} this path proceeds from the prefix. When the largest possible itemset has been found from the same prefix it backtracks down and proceeds to the next branch from the same prefix. The goal of the algorithm is to find the largest itemset as fast as possible do to the *lemma* presented in \cite{Eclatt} which states that for that all subsets of a frequent itemset are frequent as well. This algorithm usually exceeds Apriori in calculation time. Early in the development phase of our project some benchmarking was done on both the algorithms that were tested, and the Eclat performed slightly better in our case. Therefore we selected Eclat for further use. There are however some cases where Apriori can perform similar to Eclat, and a general rule of thumb is to use Eclat when item number is relatively high compared to the transaction count, but when the item number increases, differences in calculation times varies little. 
 
 \begin{figure}[H]
   \centering
@@ -1101,7 +1105,7 @@ Calculating frequency of itemsets larger then one simply involves finding inters
 ### Data Sampling
 \label{sssec:datasampling}
 
-The date supplied in this project consists of around 2 million items sold in the stores. After aggregating those items to each transaction ID´s we have just shy of 1 million transactions but as we saw in Fig.\ref{fig:Basketsize} still the largest portion contain only one item. Basket size can be further increased by aggregating those 1 million transaction to the 188.000 customers in the membership program. If we aggregate all the items to the Customer ID we get a historical basket size of around an average size of 11 items. This would be too large for the profit allocation we propose in \ref{sssec:reviced}. A way to reduce the basket size from the total purchasing history of each customer we can sample random transaction ID from the database and then aggregate that subset of transactions to each customer ID. The sample size will determine the average "partial" purchase history of the customers. Since the samples are drawn uniformly over the two year period we will be able to reflect the hole range items available over that time period. If we set the sample size of around 100.000 transactions we get an average basket size of around 4 items which is suitable for the for the modeling we will see in \ref{sssec:reviced}. The other way of reducing historical basket size is to restrict the timeframe of the available data as all the transactions are timestamped. That method however would likely lead to different results for different time periods due to seasonality in sales. Table \ref{table:CIDhistory} demonstrates the sampling we use. In Table \ref{table:CIDhistory}  we have 4 complete customer histories where each row is the items he has bought. These items belong to a single transaction in each case and the sampled transaction correspond to the blue colored items. The colored cells than form the new partial history suitable for our profit allocation in \ref{sssec:reviced}.
+The date supplied in this project consists of around 2 million items sold in the stores. After aggregating those items to each transaction ID´s we have just shy of 1 million transactions, but as we saw in Fig.\ref{fig:Basketsize} the largest portion still contains only one item. Basket size can be further increased by aggregating those 1 million transaction to the 188.000 customers in the membership program. If we aggregate all the items to the Customer ID we get a historical basket of an average size of 11 items. This would be too large for the profit allocation we propose in \ref{sssec:reviced}. A way to reduce the basket size from the total purchasing history of each customer, we can sample random transaction ID from the database and then aggregate that subset of transactions to each customer ID. The sample size will determine the average "partial" purchase history of the customers. Since the samples are drawn uniformly over the two year period, we will be able to reflect the whole range of items available over that time period. If we set the sample size of around 100.000 transactions, we get an average basket size of around 4 items, which is suitable for the modeling we will see in \ref{sssec:reviced}. The other way of reducing historical basket size is to restrict the timeframe of the available data as all the transactions being timestamped. That method however would likely lead to different results for different time periods due to seasonality in sales. Table \ref{table:CIDhistory} demonstrates the sampling we use. In Table \ref{table:CIDhistory}  we have 4 complete customer histories where each row represents the items he has bought. These items belong to a single transaction in each case and the sampled transaction corresponds to the blue colored items. The colored cells that form the new partial history suitable for our profit allocation in \ref{sssec:reviced}.
 
 ```{r,echo=F,eval=T}
 
@@ -1165,7 +1169,7 @@ print(julli,floating=FALSE,include.rownames=FALSE,hline.after=c(0:nrow(CIDhistor
 
 The heart of the model in our project will by based on the PROFSET (PROFitable-itemSET) model \cite{brijs,brijs1,brijs2,brijs3}. This model appears in various applications ranging from small automated convenience store to supermarkets.
 
-In the 2000 paper "A Data Mining Framework for Optimal Product Selection in Supermarket Data"\cite{brijs} the generalized variation of the PROFSET model was proposed with an empirical study on basket data from a Belgian grocery supermarket. We believe that this variation is best suited for our needs as it has some similarities with the data supplied by our electronics retailer. The objective of the PROFSET model is generate a hit-list of products with a user defined size. This hit-list includes the products that will produce the highest profit taking into account potential cross-sell and profit margin of each rule-set. The general working of the model is a three step process where the first step is to mine the database for frequent itemsets, the second step is where profit is allocated to the discovered itemsets and in the final step a binary optimization model is generated to find the optimal itemsets in regards of revenues generated. The following subchapters will give detail explanation of the steps involved in the model. A flow diagram of the stepwise process is displays in Fig.\ref{fig:PROFSETflow}.
+In the 2000 paper "A Data Mining Framework for Optimal Product Selection in Supermarket Data"\cite{brijs} the generalized variation of the PROFSET model was proposed with an empirical study on basket data from a Belgian grocery supermarket. We believe that this variation is best suited for our needs as it has some similarities with the data supplied by our electronics retailer. The objective of the PROFSET model is to generate a hit-list of products with a user defined size. This hit-list includes the products that will produce the highest profit, taking into account potential cross-sell and profit margin of each rule-set. The general functionality of the model is a three step process, where the first step is to mine the database for frequent itemsets, the second step is where profit is allocated to the discovered itemsets, and in the final step a binary optimization model is generated to find the optimal itemsets with regards of revenues generated. A flow diagram of the stepwise process is displays in Fig.\ref{fig:PROFSETflow}. The following subchapters will give detailed explanations of the steps highlighted in Fig.\ref{fig:PROFSETflow}. 
 
 \begin{figure}[H]
 \centering
@@ -1214,28 +1218,28 @@ Sales margins are then allocated to the correct frequent itemset from transactio
 
 \FloatBarrier
 
-### Itemset Probability distribution
+### Itemset Probability Distribution
 
 When it comes to determining the customers shopping intent we will come across transaction *t* containing multiple frequent itemsets. The following definition is adapted from \cite{brijs}.
 
 \noindent
 \begin{defn} 
-For transactions containing multible frequent itemsets. If any of these itemsets is a \textit{superset} of the other itemsets in the transaction it is called \textit{maximal} ($X_{max}$). An itemset is only considdered maximal if its larger than all other itemsets in transaction \textit{t}. The assumption is made that the customer indeed intended to buy that superset and profit is allocated to that superset according to Eq.$\eqref{transprofit}$.  
+For transactions containing multiple frequent itemsets. If any of these itemsets is a \textit{superset} of the other itemsets in the transaction it is called \textit{maximal} ($X_{max}$). An itemset is only considered maximal if its larger than all other itemsets in transaction \textit{t}. The assumption is made that the customer indeed to buy that superset and profit is allocated to that superset according to Eq.$\eqref{transprofit}$. 
 \end{defn}
 
-However when there is no such single maximal itemset but multible itemsets of the same size we need to derermine what the customer intended to buy. To make the determination of what he intended to bue we will draw a sample from the dicreat probability distribution $\Theta_{t}$. The sample space of $\Theta_{t}$ is $\Omega_{t}$, defined in Eq.\eqref{omega} where $X_{1}$ to $X_{k}$ are the frequent Itemsets in transaction *t* and *k* is the number of frequent itemsets in transaction *t*.
+However when there is no such single maximal itemset but multible itemsets of the same size we need to determine what the customer intended to buy. To make the determination of what he intended to buy we will draw a sample from the discrete probability distribution $\Theta_{t}$. The sample space of $\Theta_{t}$ is $\Omega_{t}$, defined in Eq.\eqref{omega} where $X_{1}$ to $X_{k}$ are the frequent Itemsets in transaction *t* and *k* is the number of frequent itemsets in transaction *t*.
 
 \begin{equation} \label{omega}
 \Omega_{t} = \{X_1,X_2,...,X_k\}
 \end{equation}
 
-The possibible sample outcome from $\Theta_{t}$ is a single frequent itemset *X*, The probability of drawing $X_i$, $P(X_i)$ is given with Eq.$\eqref{Mdist}$ 
+We only teka one sample from $\Theta_{t}$ so possible sample outcome from $\Theta_{t}$ is a single frequent itemset *X*, The probability of drawing $X_i$, $P(X_i)$ is given with Eq.$\eqref{Mdist}$
 
 \begin{equation} \label{Mdist}
-P(X_i) = \frac{supp(X_i)}{\sum_{\Omega_{t}} supp(X_{i})} \quad and \quad i=\lbrack 0,k \rbrack
+P(X_i) = \frac{supp(X_i)}{\sum_{\Omega_{t}} supp(X)} \quad and \quad i=\lbrack 0,k \rbrack
 \end{equation}
 
-Eq.$\eqref{Mdist}$ normalizes the support of all the frequent itemsets in transaction *t* so the sum of their probabilities equals 1. Fig.\ref{fig:suppnorml} demonstrates this normalization of support for a transaction containing four items $\{A,B,C,D\}$ and items $\{A,B,C\}$ are frequent itemsets with their support of $\{0.05,0.06,0.01\}$, the normalized probability of the itemsets would be $\{0.42,0.5,0.8\}$. The sample is drawn from the distribution on the right in Fig.\ref{fig:suppnorml}. The drawback of using this method to decide which item the customers intended to buy is that for itemsets with low support will not be likely to be drawn from the sample distribution. The problem is furthermore increased when we consider the fact the low support itemsets do not occur in many transaction so we get few chances to even out errors from sampling with high number of transaction to sample from. This will lead to unstable results for itemsets with a low support number. We will address this problem in Subsection \ref{sssec:maxcon}.
+Eq.$\eqref{Mdist}$ normalizes the support of all the frequent itemsets in transaction *t* so the sum of their probabilities equals 1. Fig.\ref{fig:suppnorml} demonstrates this normalization of support for a transaction containing four items $\{A,B,C,D\}$ and items $\{A,B,C\}$ are frequent itemsets with their support of $\{0.05, 0.06, 0.01\}$, the normalized probability of the itemsets would be $\{0.42, 0.5, 0.8\}$. The sample is drawn from the distribution on the right in Fig.\ref{fig:suppnorml}. The drawback of using this method to decide which item the customers intended to buy is that for itemsets with low support will not be likely to be drawn from the sample distribution. The problem is furthermore increased when we consider the fact the low support itemsets do not occur in many transaction so we get few chances to even out errors from sampling with high number of transaction to sample from. This will lead to unstable results for itemsets with a low support number. We will address this problem in Subsection \ref{sssec:maxcon}.
 
 
 ```{r suppnorml, echo=F,fig.width=7, fig.height=3.5,fig.cap=list("Example of the Itemset-Distribution for a transaction containing three frequent itemsets"),fig.scap=list("Example of the Item-Distribution for a transaction containing three frequent itemsets"),fig.align='center'}
@@ -1272,33 +1276,34 @@ multiplot(xx,yy,cols = 2)
 ### Profit allocation
 \label{sssec:num1}
 
-Having established Eq.\eqref{transprofit} and the itemset probability distribution $\Theta_{t}$ we can build a pseudocode based on the one introduced in \cite{brijs}. but further extended to be implemented in the programing language R to do the actual allocation of profit. To simplyfi the pseucode we will give the following definition.
+Having established Eq.\eqref{transprofit} and the itemset probability distribution $\Theta_{t}$ we can build a pseudocode based on the one introduced in \cite{brijs}. but further extended to be implemented in the programing language R to do the actual allocation of profit. To simplify the pseudocode we will give the following definition..
 
 \noindent
 \begin{defn}
-\textit{J} is a large set that \textit{covers} all frequent itemsets discoverd in \textit{T}.
+\textit{J} is a list that \textit{covers} all frequent itemsets $X$ discoverd in \textit{T}.
 \end{defn} 
 
 \noindent
 \begin{defn}
-$M_X$ is the cumulated profit margins allocated to Itemset \textit{X} from all transactions in \textit{T} where \textit{X} was drawn from $\Theta_{t}$.
+$M_X$ is a list containing the cumulated profit margins allocated to each itemset \textit{X} from all the transactions in \textit{T}. $M_X = \{M_{X_1},...,M_{X_l}\}$, where $l$ is the number of discovered frequent itemsets.
 \end{defn} 
 
 \begin{algorithm}[H]
  \KwData{$T$ and $J$}
- \KwResult{Cumulative Pofit allocated to each frequent Itemset}
+ \KwResult{Cumulated profit allocated to each frequent Itemset}
  initialization all $M_X := 0$\;
 \For{every transaction $t \in T$}{
- \While{$J \cap t \neq \emptyset$}{
+ \While{$\{J \cap t\} \neq \emptyset$}{
     \uIf{$count(X_{max} \in t)>1$}{
-      Generate probability distribution $\Theta_{t}$
-      Draw $X$ from $\Theta_{t}$\;
-      $M_{X} := M_{X} + m_{X}$\;
-      $t := t \setminus X$\;
+      Generate probability distribution $\Theta_{t}$\;
+      Draw $X_i$ from $\Theta_{t}$\;
+      $M_{X_i} := M_{X_i} + m_{X_i}$\;
+      $t := t \setminus X_i$\;
     }
     \uElseIf{$count(X_{max} \in t)=1$}{
-      $M_{X} := M_{X} + m_{X}$\;
-      $t := t \setminus X$\;
+      $M_{X_i} := X_{max}$\;
+      $M_{X_i} := M_{X_i} + m_{X_i}$\;
+      $t := t \setminus X_i$\;
       Break: continue to next transaction\;      
     }
  }
@@ -1307,121 +1312,172 @@ $M_X$ is the cumulated profit margins allocated to Itemset \textit{X} from all t
 \caption{PROFSET profit allocation}
 \end{algorithm}
 
-To further explain what is going on in the code we go through each transaction in *T*, if that transaction contains a frequent maximal itemset of the same size as the transaction it will be allocated all the profit from the transaction. If however no such frequent itemset is within the transaction but it contains multible subsets that are frequent we need to draw a subset from the itemset probability distribution and allocate the profit generated from that frequent set to it. After that the frequent subset is subtracted from the transaction and the same steps are repeated until the transaction contains no frequent itemsets. There is however a drawback to using this method. When we have for example two frequent itemsets containing 3 different items, each time we encounter a transaction containing those three items the itemset that has the higher support of the two will dominate the other when it comes to allocation profit so one of the frequent itemsets will in most cases get the profit from the intersecting item. 
+To further explain what is going on in the code we go through each transaction in *T*, if that transaction contains a frequent maximal itemset of the same size as the transaction it will be allocated all the profit from the transaction. If however no such frequent itemset is within the transaction but it contains multiple subsets that are frequent we need to draw a subset from the itemset probability distribution and allocate the profit generated from that frequent set to it. After that the frequent subset is subtracted from the transaction and the same steps are repeated until the transaction contains no frequent itemsets. There is however a drawback to using this method. When we have for example two frequent itemsets containing 3 different items, each time we encounter a transaction containing those three items the itemset that has the higher support of the two will dominate the other when it comes to allocation profit so one of the frequent itemsets will in most cases get the profit from the intersecting item.
 
-For example a transaction with the following items $\{Mobile Phone$, $Extra Charger$, $Carrirebag\}$ might have two frequent itemsets containing $\{Mobile Phone, Carrier bag \}$ and another one containing $\{Mobile Phone,Extra Charger\}$. If the first has a support of 0.8\% and the latter 0.3\% we will be allocating the profit dominantly to the first itemset. After subtracting the itemset the transaction we will handle the extra charger as a separate transaction. This lead to a large inflation of allocation to the first itemset as well as the charger. We will see an example of this with further discussions in Chapter 3, Results. Carrierbag
+For example a transaction with the following items $\{Mobile Phone$, $Extra Charger$, $Carrirebag\}$ might have two frequent itemsets containing $\{Mobile Phone, Carrier bag \}$ and another one containing $\{Mobile Phone,Extra Charger\}$. If the first has a support of 0,8 and the latter 0,3 we will be allocating the profit dominantly to the first itemset. After subtracting the itemset the transaction we will handle the extra charger as a separate transaction. This lead to a large inflation of allocation to the first itemset as well as the charger. We will see an example of this with further discussions in Chapter 3.
 
-\cite{brijs} does not quantify how it establishes a baseline of profit to each frequentset to compare to after running the profit allocation so there are some unclear steps involved. When we encounter a transaction containing an item that intersects with multiple frequent sets, we have to determine how to split the profit to each of the frequent sets. We do this by allocating the fraction of the items price to each frequent set in correct proportions of number of frequent sets. Lets assume that we encounter a transaction contain items $\text{\{a,b,c\}}$. $\text{\{a,b\}}$ is a frequent set $\text{\{a,c\}}$ is as well that meens that $\text{\{a\}}$ and $\text{\{c\}}$ are as well so the profit assigned to $\text{\{a,b\}}$ would be $1/3 \cdot price_a + 1/3 \cdot price_b$ and for $\text{\{a,c\}}$ would be $1/3 \cdot price_a + 1/3 \cdot price_c$. and $\text{\{a\},\{b\},\{c\}}$ the remaining $1/3$. That is {a} would be assigned $1/3 \cdot price_a$, {b} would get $1/3 \cdot price_b$ and finally c is allocated $1/3 \cdot price_c$.
-
-\FloatBarrier
+\cite{brijs} does not quantify how it establishes a baseline of profit to each frequent set to compare to after running the profit allocation so there are some unclear steps involved. When we encounter a transaction containing an item that intersects with multiple frequent sets, we have to determine how to split the profit to each of the frequent sets. We do this by allocating the fraction of the items price to each frequent set in correct proportions of number of frequent sets. Lets assume that we encounter a transaction contain items $\text{\{a,b,c\}}$. $\text{\{a,b\}}$ is a frequent set $\text{\{a,c\}}$ is as well that meens that $\text{\{a\}}$ and $\text{\{c\}}$ are as well so the profit assigned to $\text{\{a,b\}}$ would be $1/3 \cdot price_a + 1/3 \cdot price_b$ and for $\text{\{a,c\}}$ would be $1/3 \cdot price_a + 1/3 \cdot price_c$. The remaining $1/3$ is allocated to $\text{\{a\},\{b\},\{c\}}$. That is {a} would be assigned $1/3 \cdot price_a$, {b} would get $1/3 \cdot price_b$ and finally c is allocated $1/3 \cdot price_c$.
 
 ### Optimization Model
 \label{sssec:opti}
 
-After allocating profit to each itemset we select those that have the highest cross selling potential. Whether we are using the results to select items for promotions or assortment within the shop we will have some limitations on how many items when can choose. for example in a advertisement brochure we have limited space for advertisement and it would be optimal to select the products that would yield the highest expected return on the investment behind the brochure. The same can be said when it comes to selecting items for display within the shop where eye-catching shelf space is a limited quantity. Solving the itemset selection problem might seem simple to solve with heuristics but as itemsets get larger containing multiple categories from multiple groups the problem becomes hard to solve with simple heuristics.
+After allocating profit to each itemset we select those that have the highest cross selling potential. Whether we are using the results to select items for promotions or assortment within the shop we will have some limitations on how many items we can choose. For example in an advertisement brochure we have limited space for advertisement and it would be optimal to select the products that would yield the highest expected return on the investment behind the brochure. The same can be said when it comes to selecting items for display within the shop where eye-catching shelf space is a limited quantity. Solving the itemset selection problem might seem simple to manually, but it is difficult to find a good solution. To find the best possible solution to the selection problem we will use optimization.
 
-This itemset selection problem is solved using the binary integer problem (BIP) in \eqref{optimiziation}. This problem is based on the one presented in \cite{brijs,brijs1,brijs2,brijs3} but we made some adjustments to suit the goals of our project.
+This itemset selection problem is solved using the binary integer problem (BIP) in Eq.\eqref{optimiziation}. This problem is based on the one presented in \cite{brijs,brijs1,brijs2,brijs3} but we made some adjustments to suit the goals of our project.
 
-Since the retailer has a large number of categories on offer but yet a small number of categories might responsible for the largest portion of revenues. If we would only select those categories for advertisement we might get a very monotonic campaign, for example a campaign containing mostly mobile phones. We however would be able to constrain the number of categories from each group used in those scenarios. It is good to remind the reader that we are only working on the top two level in the store hierarchy. So the model in \cite{brijs}\cite{brijs1}\cite{brijs2}\cite{brijs3} has been adjusted to those conditions. 
+The retailer has a large number of categories on offer while a small number of categories might responsible for the largest portion of the revenue. If we would only select those categories for advertisement we might get a very monotonic campaign, for example a campaign containing mostly mobile phones. We however would be able to constrain the number of categories from each group used in those scenarios. It is good to remind the reader that we are only working on the top two level in the store hierarchy. So the model in \cite{brijs,brijs1,brijs2,brijs3} has been adjusted to those conditions. 
 
-The total number of items selected is defined as *ItemMax*. To prevent the model from selecting to many categories from a single Item-Group we have added a new upper bounding constrain $ItemMax_{G_{g}}$ in \eqref{optimiziation}. 
-To add to the flexibility of the model we can also have a lower bound on the number of items selected in the optimal set from each group. The minimum number of categories from each group is set by $ItemMin_{G_{g}}$. However if we set the *ItemMax* to a lower number than the number of groups than the frequent categories belong to, and at the same time set an $ItemMin_{G_{g}}$ equal to a number lager than 0 we will not get an infeasible solution as the model becomes over constrained since we would be forcing the model to select more categories than the *ItemMax*. This dilemma is simply solved in two ways, When we want to have a strict *ItemMax* the lower bounding $ItemMin_{G_{g}}$ is set to zero. If we have set that same lower bound to another number we reset the *ItemMax* according to \eqref{maxIT}.
+#### Model Description
 
+\setstretch{1}
+ \begin{itemize}
+   \item  \textbf{Parameter:}
+   \begin{itemize}
+     \item  $M_X$: List containing the cumulated profit allocated to each frequent itemset, the result from the profit allocation step 
+   \end{itemize}
+   \begin{itemize}
+     \item  $Cost_i$: The holding cost of Item $i$ in $M_X$, in our case the holdingcost of Item-category $i$
+   \end{itemize}
+   \begin{itemize}
+     \item  $ItemMax$: The total number of Item-categories allowed in the optimal solution
+   \end{itemize}
+   \begin{itemize}
+     \item  $G_{g}$: A set of Item-Groups the itemsets in $J$ belong to, $\{G_1,...,G_n\}$
+   \end{itemize}      
+   \begin{itemize}
+     \item  $ItemMin_{G_{g}}$: The minimum number of Item-Categories within each Item-Group in the optimal solution
+   \end{itemize}   
+   \begin{itemize}
+     \item  $ItemMax_{G_{g}}$: The maximum number of Item-Categories within each Item-Group in the optimal solution
+   \end{itemize}      
+ \end{itemize}
+ 
+  \begin{itemize}
+   \item  \textbf{Variables:}
+   \begin{itemize}
+     \item  $P_X$: Is a decission variable that decides where itemset $X$ is a part of the optimal solution or not
+   \end{itemize}
+    \begin{itemize}
+     \item  $Q_i$: Is a decision, equals 1 as soon as any itemset $X$ is select to account for the cost associated with $X$
+   \end{itemize}
+ \end{itemize}
+\setstretch{1.3}
 
-\begin{equation} \label{maxIT}
-\begin{aligned}
-ItemMax_{NEW} = Max \big\{ItemMax_{OLD}, count({G_{g}}) \big\} \\
-\end{aligned}
-\end{equation}
-
+#### The Model
 
 \begin{equation} 
 \label{optimiziation}
 \begin{aligned}
 & \text{Maxmize:} 
-& & \sum_{T_{j}} M(X) \cdot P_X - \sum_{c=1}^{n}\sum_{i \in C_{c}} Cost_{i}  \cdot Q_{i} \\
+& & \sum_{X \in J} M_X \cdot P_X - \sum_{c=1}^{n}\sum_{i \in G_{g}} Cost_{i}  \cdot Q_{i} \\
 & \text{subject to:} 
 & & \sum_{c=1}^{n}\sum_{i \in G_{g}} Q_{i} = ItemMax \\
 & & & \forall G_{g}: \sum_{i \in G_{g}} Q_{i} \geq ItemMin_{G_{g}} \\
 & & & \forall G_{g}: \sum_{i \in G_{g}} Q_{i} \leq ItemMax_{G_{g}} \\
-& & & \forall X \in L, \forall i \in X : Q_{i} \geq P_{X} \\
+& & & \forall X \in J, \forall i \in X : Q_{i} \geq P_{X} \\
 & & & P_{X},Q_{i} \in \{0,1\}, i=1,...,n
 \end{aligned}
 \end{equation}
 
-All the decision variables in the model are binary but if we taka a look at the objective function in \eqref{optimization} we have a negative contributor *cost*. This cost is the inventory holding cost of all the items that are in each discovered itemset. Inventory cost can be broken down into the following cost-contributors \cite{richardson1995transportation}.
 
-\setstretch{1}
- \begin{itemize}
-   \item{\textbf{Inventory Holding Cost 25\%-55\%}}
-   \begin{itemize}
-     \item  Cost of Money 6\% - 12\%
-   \end{itemize}
-   \begin{itemize}
-     \item  Taxes 2\% - 6\%
-   \end{itemize}
-   \begin{itemize}
-     \item  Warehouse Expenses 2\% - 5\%
-   \end{itemize}
-   \begin{itemize}
-     \item  Insurance 1\% - 3\%
-   \end{itemize}
-   \begin{itemize}
-     \item  Clerical \& Inventory Control 3\% - 6\%
-   \end{itemize}
-   \begin{itemize}
-     \item  Physical Handling 2\% - 5\%
-   \end{itemize}
-   \begin{itemize}
-     \item  Deterioration \& Pilferage 3\% - 6\%
-   \end{itemize}
- \end{itemize}
-\setstretch{1.3}
-
-
-This cost is rarely calculated in the industry to an extreme accuracy. How deep down the store hierarchy this cost is estimated varies but rarely is this calculated down to item-level containing individual products. The supplier of the data in this project estimates the inventory cost to be around 25% on average over all the board, this poses some limitations that reduce accuracy of the resulting optimal set of items. Changing this in our model is relatively simple and inly involves adding one vector to the model containing the variable holding cost for each category. The model is solved using the branch and cut method \cite{BandC} available in the GlpkAPI \cite{glpkapi} in R.
+Caution should be taken when setting the parameters in Eq.\eqref{optimiziation} since we have a constrain on the total number of items in the optimal solution and a lower bound on items from each Item-Group. If we set the *ItemMax* to a lower number than the number of groups than the frequent categories belong to, and at the same time set an $ItemMin_{G_{g}}$ equal to a number lager than 0 we will not get a infeasible solution as the model becomes over constrained since we would be forcing the model to select more categories than the *ItemMax*. The model is solved using the branch and cut method \cite{BandC} available in the GlpkAPI \cite{glpkapi} in R.
  
 
 \FloatBarrier
 
-## Improvements and customizations
+## Improvements and Customizations
 
 \FloatBarrier
+
+### Cost of Itemset
+\label{sssec:cost}
+
+\cite{brijs} lacks the definition of *cost* estimation of each item. The cost is introduced in the optimization model, Eq.\eqref{optimization} but no further definitions given. Inventory holding cost can be broken down into the following cost-contributors \cite{richardson1995transportation}. 
+
+\setstretch{1}
+ \begin{itemize}
+   \item{\textbf{Inventory Holding Cost}}
+   \begin{itemize}
+     \item  Cost of Money 
+   \end{itemize}
+   \begin{itemize}
+     \item  Taxes 
+   \end{itemize}
+   \begin{itemize}
+     \item  Warehouse Expenses 
+   \end{itemize}
+   \begin{itemize}
+     \item  Insurance 
+   \end{itemize}
+   \begin{itemize}
+     \item  Clerical 
+   \end{itemize}
+   \begin{itemize}
+     \item  Physical Handling 
+   \end{itemize}
+   \begin{itemize}
+     \item  Deterioration \& Pilferage 
+   \end{itemize}
+ \end{itemize}
+\setstretch{1.3}
+
+This cost is rarely calculated in the industry to an extreme accuracy. How deep down the store hierarchy this cost is estimated varies but rarely is this calculated down to Item-level containing individual products. The supplier of the data in this project estimates the inventory cost to be around 25% on average over all the board, this poses some limitations that reduce accuracy of the resulting optimal set. Changing this in our model is relatively simple and only involves adding one vector to the optimization with the cost assoceated with each Itemset.
+
+Each item at the retailer has holding cost that can be evaluated according to \cite{richardson1995transportation}, so each frequent itemset $X_i$ will have a total holding cost assoceated with it. This cost should be estamated the sama way the cumulative profit of each itemset is evaluated.
+
+\begin{defn}
+$C_X$: Is a list containing the cumulated $cost$ allocated to each itemset \textit{X} from all the transactions in \textit{T}. $C_X = \{C_{X_1},...,C_{X_l}\}$, where $l$ is the number of discovered frequent itemsets. $C_{X_i}$ is the holding cost of itemset $X_i$ and $i=\lbrack 1,l \rbrack$
+\end{defn} 
+
+The holding cost of itemset *X* in transaction *t* is evaluated with Eq.\eqref{cost}. Where $cost_j$ is the holding cost of item $j$ in itemset *X* and $f_j$ is the quantity of item *j*
+
+\begin{equation} \label{cost}
+c_{X} = \sum_{j=1}^{n} cost_j \cdot f_j \quad and \quad n=|X|
+\end{equation}
+
+These calculations are added to the profit allocation step in Subsectio \ref{sssec:reviced}. 
 
 ### Maximum contributor
 \label{sssec:maxcon}
 
-As stated earlier the PROFSET model assumes that the customers intent was to buy the frequent items present in each transaction and if the transaction contains more than one frequent itemset we draw a sample from the itemset distribution. This assumption does not account for the price of that frequent itemset relative to total price of the transaction containing the itemset. We presume however that the customers intent should be a combination of both the support of the frequent itemset and the price. When we come across transaction containing some arbitrary number of frequent sets the profit should be allocated to the itemset highest probable contribution of the total price of the transaction. Using this assumption we get a more balanced allocation of profit.  
+As stated earlier the PROFSET model assumes that the customers intent was to buy the maximal frequent items present in each transaction and if the transaction contains more than one frequent itemset we draw a sample from the itemset distribution $\Theta_{t}$. This assumption does not account for the price of that frequent itemset relative to total price of the transaction containing the itemset. We presume however that the customers intent should be a combination of both the support of the frequent itemset and the price. When we come across transaction containing some arbitrary number of frequent sets the profit should be allocated to the itemset highest probable contribution of the total price of the transaction. Using this assumption we get a more balanced allocation of profit.  
 
-Instead of sampling the customers intend we would like to propose to find the maximum contributor to the sum total of each transaction. This is done by finding the maximum of the normalized support (for the transaction) corrected for price of each itemsets as seen in Eq.\eqref{maxcon}.
+\begin{defn}
+$MC_t$: Is the maximum profit contributor in transaction $t$ with respect to both price and most probable purchase intent.
+\end{defn} 
+
+Instead of sampling the customers purchase intent we would like to propose finding the maximum contributor to the sum total of each transaction. This is done by finding the argmax of the normalized support of each Itemset in transaction *t*, corrected for price of each itemsets as seen in Eq.\eqref{maxcon}. Where *k* is the number of frequent itemsets in transaction *t*.
   
 \begin{equation} \label{maxcon}
 \begin{aligned}
-MC(T_{j}) & = Max \bigg\{ \frac{support(X_{max})}{\sum_{Y_{max} \in T_{j}} support(Y_{max})} \times Price_{i} \bigg\} \\
-\forall i & \in \{ T_{j}\}
+MC_{t} & = argmax \bigg\{ \frac{supp(X_1)}{\sum_{j=1}^{k} supp(X_{j})} \times Price_{1},...,\frac{supp(X_i)}{\sum_{j=1}^{k} supp(X_{j})} \times Price_{i} \bigg\} \\
 \end{aligned}
 \end{equation}
 
-This would best be demonstrated by a simple example. lets assume we have a transaction containing two items A and B, both of them have been discovered as frequent items. The price of A and B are $50 and $60. The support for item A is 0.05 and the support for item B is 0.01 so the normalized probability (support) for the items would be 0.83 for A and 0.17 for B. To determine the customers intent we net to calculate $max\{.83 \times 50, 0.17 \times 60\}$  which is 40.5 and belongs to item A and therefore we assume that the customer intended to buy A. This assumption would prove useful for example when a transaction includes an expensive item like a PlayStation console and a very popular game we would not assume that the customer intended to buy the game due to higher support and the console being complimentary. Since non-frequent items have a support that approaches zero the will never be considered a maximal contributor. 
+This would best be demonstrated by a simple example. Assume we have a transaction containing two items A and B, both of them have been discovered as frequent itemsets. The price of A and B are $50 and $60. The support for item A is 0,05 and the support for item B is 0,01 so the normalized probability (support) for the items would be 0.83 for A and 0.17 for B. To determine the customers intent we need to calculate $argmax\{.83 \times 50, 0.17 \times 60\}=A$. Therefore we assume that the customer intended to buy A. This assumption would prove useful for example when a transaction includes an expensive item like a PlayStation console and a very popular game, we would not assume that the customer intended to buy the game due to higher support and the console being complimentary. Since non-frequent items have a support that approaches zero they will never be considered a maximal contributor.
 
 ### Upper Limit Function
 \label{sssec:upp}
 
-handling. One of them is the fact that when we are allocating profit to the frequent itemset in each transaction we allocate the sum total of the whole transaction to it only if the itemset size is equal to the transaction size. Therefor we would be overlooking profit generated by complimentary items that are not frequent in but still a part of the transaction, we however would like to account for that extra profit within some boundaries. It can be justified that the customers intend is indeed to buy the maximal contributor as described in \ref{sssec:maxcon} and the remaining items in the transaction are complimentary. By using the sampling we described in \ref{sssec:datasampling} we can control the historical basket size as the assumption we are making here would not hold in extremely large basket where the intent is to buy multiple items.
+The PROFSET model has more room for improvements. One of them is the fact that when we are allocating profit to the frequent itemset in each transaction we allocate the sum total of the whole transaction to it only if the itemset size is equal to the transaction size. Therefore we would be overlooking profit generated by complimentary items that are not frequent in *t* but still a part of the transaction. We however would like to account for that extra profit within some boundaries. It can be justified that the customers intend is to buy the maximal contributor as described in Subsection \ref{sssec:maxcon} and the remaining items in the transaction are complimentary. By using the sampling we described in Subsection \ref{sssec:datasampling} we can control the historical basket size as the assumption we are making here would not hold in extremely large basket where the intent is to buy multiple items.
 
-By using the concept of the maximal contributor from \ref{sssec:maxcon} we run the risk of coming across transactions contain a frequent itemset and a non-frequent item that is priced higher than the frequent itemset. Since that highly price item it is assumed to be complimentary due to it not being a maximal contributor we have a dilemma, when should we accept the profit from the complimentary items. 
+By using the concept of the maximal contributor from \ref{sssec:maxcon} we run the risk of coming across transactions containing a frequent itemset and a non-frequent item that is priced higher than the frequent itemset. Since that highly price item it is assumed to be complimentary due to it not being a maximal contributor we have a dilemma, when should we accept the profit from the complimentary items ?. 
 
-To solve this dilemma we need to introduce some restriction to what can be allocate to each itemset. A simple restriction would be to add a binary like condition to the allocation where only transactions with a sum total of X-times the price of the frequent item-set would be allocated the profit. We believe that the acceptable upper limit to the cross sell should depend on the price of the itemset that is being allocated the transaction profit. It is hard to find literature of customer purchasing behavior on this subtopic regarding cross sell, we however are confident that this would be somewhat relatable to risk utility. Where the average person is willing to risk more when stakes are low but less when stakes are high. 
+To solve this dilemma we need to introduce some restriction to what can be allocated to each itemset. A simple restriction would be to add a binary like condition to the allocation where only transactions with a sum total of X-times the price of the frequent itemset would be allocated the profit. We believe that the acceptable upper limit to the cross sell should depend on the price of the itemset that is being allocated the transaction profit. We are confident that this would be somewhat relatable to risk utility. The customer should therefore be willing to add more expensive complimentary items when prices are low and less expensive items prices increase. 
 
-For example let's assume that the customers intent was to buy a frequent book lamp priced at \$5 but needs to buy a \$6 non-frequent battery for the lamp. In the case of the lamp it would not seem a bad praxis to allocate the price of the battery to the lamp since the intent was indeed to buy the lamp and the battery was complementary. To the contrast if a person is buying an expensive LCD TV priced at \$3000 we should be less likely to add a complimentary sound system for \$4000.
+For example let's assume that the customers intent was to buy a frequent book lamp priced at \$5 but needs to buy a \$6 non-frequent battery for the lamp. In the case of the lamp it would not seem a bad practice to allocate the price of the battery to the lamp since the intent was indeed to buy the lamp and the battery was complementary. To the contrast if a person is buying an expensive LCD TV priced at \$3000 we should be less likely to add a complimentary sound system for \$4000.
 
-To accommodate for these assumptions we present the *Upper Limit Function* Eq.$\eqref{upperlimit}$, this function is intended to reflect to some extent the argument we have. We believe the it would be suitable to us a function with exponential decay with respect to the price of the frequent itemset. In other word we are willing to accept more expensive complementary items when the sum total of the transaction is low but less expensive when the price of the frequent item is high. This function is presented in fig.$\ref{fig:accfunc}$. The parameters to this function would be a research question on its own but for now we will stick to our hypothesis that a customer buying an item that approaches zero in price is willing to buy a complimentary item with it that is 125% of the intended item, but as we approaches expensive products around \$2000 the upper limit will plato around %25. For non-frequent items their support set to me zero so they will never be considered a maximal contributor.
+\begin{defn}
+$U_X$: Is the price threshold of complimentary items that itemset $X$ can accept as cross-sell. It is evaluated with Eq.$\eqref{upperlimit}$ where $Price_X$ is the price of itemset $X$
+\end{defn} 
 
 \begin{equation} \label{upperlimit}
 \begin{aligned}
-U(x) = exp\big(\frac{-x}{\lambda}\big) + 1.25
+U_X = exp\big(\frac{-Price_X}{\lambda}\big) + 1.25
 \end{aligned}
 \end{equation}
+
+Eq.$\eqref{upperlimit}$ is intended to reflect to some extent the argument we have. The function decays exponential with respect to the price of the frequent itemset. The $\lambda$ parameter is set to 200.000. With $\lambda$ set at 200.000 we will get the threashold seen in Fig.$\ref{fig:accfunc}$. As we can see in Fig.$\ref{fig:accfunc}$ itemsets that approach price zero will accept complimentary items that are priced at 2,25 times the frequent itemset price. As we approaches expensive products around 200.000 (\$2000) the upper limit will plateau around 0,25.
 
 ```{r accfunction,results="hide", echo=F,eval=T,fig.cap="\\label{fig:accfunc} Exponential decay of acceptable cross sell",fig.height=3,fig.width=8}
 Price <- seq(0,200000,50)
@@ -1435,13 +1491,15 @@ ggplot(dff, aes(Price)) +
   MTheme 
 ```
 
-Demonstrating how this works in praxis is best explained by looking at Table \ref{table:Table1} and Table \ref{table:Table2}. In this example lets assume that we had discovered 3 frequent items a,b and c and there prices and support are in Table \ref{table:Table1} on the left. The determined purchase intend can be seen in column 3 (PI) in Table \ref{table:Table2} on the right. The corresponding threshold of what would be accounted as maximum acceptable cross-sell is in column 4 (U(x)). The last column is the true allocated profit to each of the Item-sets are in the last column.
+Demonstrating how this works in practice is best explained by looking at Table \ref{table:Table1} and Table \ref{table:Table2}. In this example lets assume that we had discovered 4 frequent itemsets a,b,c and d and there prices and support are in Table \ref{table:Table1}. The determined purchase intend can be seen in column 3, PI in Table \ref{table:Table2} and the total price of the transaction is in column $t\textsubscript{P}$. The corresponding threshold of what would be accounted as maximum acceptable cross-sell is in column 4 $U_X$. The last column is the actual allocated profit to each of the Itemsets.
 
-```{r,echo=F,eval=T}
+```{r,echo=F,eval=T,results='asis'}
 price = signif(c(10000, 20000, 6000, 5000),2) 
 Item = c("a", "b", "c", "d") 
 Support = signif(c(0.6, 0.1, 0.3, 0.45),2) 
 dfp = data.frame(Item, price, Support)
+dfp[,2] <- format(as.numeric(dfp[,2]), nsmall=0, big.mark=".",decimal=",")
+dfp[,3] <- format(as.numeric(dfp[,3]), nsmall=2, big.mark=".",decimal=",")
 
 TID = c("0", "10", "21", "57")
 Items = c("a,b","a,c","c,d","b,d")
@@ -1450,31 +1508,38 @@ AX = signif(acept(c(10000, 10000, 5000, 5000))*(c(10000, 10000, 5000, 5000)),2)
 TP = signif(c(30000, 16000, 11000, 25000),2)
 MX = signif(c(10000,16000,11000,5000),2) 
 dft = data.frame(TID,Items,PI,TP,AX,MX)
+dft[,4] <- format(as.numeric(dft[,4]), nsmall=0, big.mark=".",decimal=",")
+dft[,5] <- format(as.numeric(dft[,5]), nsmall=0, big.mark=".",decimal=",")
+dft[,6] <- format(as.numeric(dft[,6]), nsmall=0, big.mark=".",decimal=",")
+
+
 names(dft)[3] <- "PI"
-names(dft)[4] <- "TP"
-names(dft)[5] <- "U(x)"
-names(dft)[6] <- "M(x)"
+names(dft)[4] <- "t\\textsubscript{P}"
+names(dft)[5] <- "U\\textsubscript{X}"
+names(dft)[6] <- "{M\\textsubscript{X}}"
 
 ```
 
 \begin{table}[htb]
 \begin{minipage}{.38\textwidth}
 \centering
-\caption{Simple example of discovered items whith prices}
+\captionsetup{justification=centering}
+\caption{\\Example of discovered itemsets}
 \label{table:Table1}
 ```{r,echo=F,eval=T,results='asis'}
 library("xtable")
 row.names(dfp) <- NULL
-print(xtable(dfp),floating=FALSE,include.rownames=FALSE)
+print(xtable(dfp),floating=FALSE,include.rownames=FALSE,sanitize.text.function = identity,latex.environments = "center")
 ```
 \end{minipage}
 \begin{minipage}{.48\textwidth}
 \centering
-\caption{Resulting Profit allocation when using upper limit}
+\captionsetup{justification=centering}
+\caption{\\Resulting Profit allocation when using $U_X$}
 \label{table:Table2}
 ```{r,echo=F,eval=T,results='asis'}
 row.names(dft) <- NULL
-print(xtable(dft),floating=FALSE,include.rownames=FALSE)
+print(xtable(dft),floating=FALSE,include.rownames=FALSE,sanitize.text.function = identity,latex.environments = "center")
 ```
 \end{minipage}
 \end{table}
@@ -1483,38 +1548,41 @@ print(xtable(dft),floating=FALSE,include.rownames=FALSE)
 ### Revised Profit Allocation
 \label{sssec:reviced}
 
-To account for our new assumtions in subsection \label{sssec:maxcon} and subsection \label{sssec:upp} we need to construct a revise profit allocation algorithm. The following pseudocode demonstrates our approach.
+To account for our new assumtions in Subsection \ref{sssec:cost} to Subsection \ref{sssec:upp} we need to construct a revise profit allocation algorithm. The pseudocode in algorithm.\ref{sudo} demonstrates our approach.
+
+\begin{defn}
+$t_P$: Is the total profit from transaction $t$
+\end{defn} 
 
 \begin{algorithm}[H]
- \KwData{All transactions and frequent Item-sets}
- \KwResult{price allocated to each frequent Item-set}
- initialization $M(X) := 0$\;
-\For{every transaction $T_{j}$}{
- \If{$T_{j}$ contains frequent Item-set}{
-    Calculate MC($T_{j}$) with eq.$\eqref{maxcon}$\;
-    Calculate U(x) with eq.$\eqref{upperlimit}$\;
-    Calculate m(x) with eq.$\eqref{transprofit}$\;
-    $M(X) \leftarrow MC(X)$\;
-    \uIf{$U(x) >= m(x)$}{
-      $M(X) := M(X) + m(x)$\;
+ \KwData{T and J}
+ \KwResult{Cumulated profit and cost allocated to each frequent Itemset}
+ initialization $M_X := 0$ and $C_X := 0$\;
+\For{every transaction $t \in T$}{
+ \If{$\{J \cap t\} \neq \emptyset$}{
+    $\{M_X,C_x\} := MC_t$\;
+    $C_X := C_X + c_X$\;
+    \uIf{$U_X >= t_P$}{
+      $M_X := M_X + t_P$\;
     }
     \Else{
-      $M(X) := M(X) + Profit_{MC(X)}$\;
+      $M_X := M_X + m_X$\;
     }
  }
 }
 
-\Return{all M(X)}
-\caption{Reviced Profit Allocation...laga italic font}
+\Return{all $M_X$ and $C_X$}
+\label{sudo}
+\caption{Reviced profit allocation}
 \end{algorithm}
 
-Now lets give a further explanation of what the cod is doing. For each transaction we check if it contains any frequent itemsets, if the transaction contains a set we start by calculating the maximal contributor. Next we calculate the acceptable upper limit to the profit that can be allocated to that frequent itemset. After that we calculate the total profit of the transaction with $\eqref{transprofit}$. Now we check if the upper limit exeats the total profit of the transaction. If that criteria is met the transaction profit is allocated to the maximal contributor. If the criteria is not met the frequent itemset in only allocated the profit of the items contained in the set. Than we proceed to the next transaction and so on. When the algorithm fineshes the last transaction it outputs a vector containing the profit allocated to each of the frequent itemsets.
+Now lets give a further explanation of what the code is doing. For each transaction we check if it contains any frequent itemsets, if the transaction contains a set we start by calculating the maximum contributor with Eq.\eqref{maxcon}. Next we calculate the acceptable upper limit of the maximum contributor with Eq.\eqref{upperlimit}. After that we calculate the total profit of the transaction, $t_P$. Now we check if the upper limit exceeds the total profit of the transaction. If that criteria is met the transaction profit is allocated to the maximal contributor. If the criteria is not met the frequent itemset in only allocated the profit of the items contained in the set. Than we proceed to the next transaction. When the algorithm finishes the last transaction it outputs a vector containing the profit allocated to each of the frequent itemsets as well as the cost associated to it.
 
-\FloatBarrier
+\FloatBarrier 
 
 ### Other Uses
 
-As we stated in Chapter 1 we believe that more information can be extracted from the model than just a hit-list of products to use in promotions or assortments. Instead of just appending the profit from complimentary products to the frequent itemsets in the profit allocation we can Keep track of all the categories that are excepted as cross selling items in each transaction. By doing that we have now two list of items on containing the frequent LHS and the complimentary items. Fig.\ref{fig:venn} shows these two intersecting lists of items as a subset of all the items(categories) in the store. There will also exist the third list of items represented with the blue area in Fig.\ref{fig:venn}. These are the categories the belong neither to the LHS nor the list of complementary items, $\{LHS \downarrow C \}$. This list should be highly considered when it comes to discontinuations And deciding which items to put up for *sale*. We believe the by focusing on these product we will be able to remove products with minimal impact on sales of the remaining products in store. 
+As we stated in Chapter 1 we believe that more information can be extracted from the model than just a hit-list of products to use in promotions or assortments. Instead of just appending the profit from complimentary products to the frequent itemsets in the profit allocation we can keep track of all the categories that are accepted as cross selling items in each transaction. By doing that we have now two list of items on containing the frequent LHS and the complimentary items. Fig.\ref{fig:venn} shows these two intersecting lists of items as a subset of all the items(categories) in the store. There will also exist the third list of items represented with the blue area in Fig.\ref{fig:venn}. These are the categories the belong neither to the LHS nor the list of complementary items, $\{LHS \downarrow C \}$. This list should be highly considered when it comes to discontinuations And deciding which items to put up for *sale*. We believe that focusing on these products we will be able to discontinue products with minimal impact on sales of the remaining products in store. 
 
 \begin{figure}[H]
 \centering
@@ -1532,11 +1600,11 @@ As we stated in Chapter 1 we believe that more information can be extracted from
 
 \FloatBarrier
 
-Another insight we can draw from the model is when to wrap products together into a special offer. It is quite common that retailers identify products that go well together based on frequent itemsets discovered in the database. We however believe that we need to look at the profit(whit cross sell included) to determine if the products should be bundled together or promoted separately.
+Another insight we can draw from the model is when to wrap products together into a special offer. It is quite common that retailers identify products that go well together based on frequent itemsets discovered in the database. We however believe that we need to look at the profit(with cross sell included) to determine if the products should be bundled together or promoted separately.
 
 ## Summary
 
-Now we are able to make a short summary of all the steps involved in our model. First we query the database for adequate data, next we do some preprocessing there after we allocate profit with our revised method and the final steps are finding the optimal sets and visualizing the results. These steps are presented in Fig.\ref{fig:MODEL}. One side benefit of our model is that the profit allocation does not contain any sampling from a probability distribution and performs vectorized calculation which drastically reduces calculation time.
+Now we are able to make a short summary of all the steps involved in our model. First we query the database for adequate data, next we do some preprocessing, there after we allocate profit with our revised method and the final steps are finding the optimal sets and visualizing the results. These steps are presented in Fig.\ref{fig:MODEL}. One side benefit of our model is that the profit allocation does not contain any sampling from a probability distribution and performs vectorized calculation which drastically reduces calculation time.
 
 \begin{figure}[H]
 \centering
@@ -1573,31 +1641,34 @@ Now we are able to make a short summary of all the steps involved in our model. 
   ]
 \end{forest}
 \caption{Model Diagram}
-\label{MODEL}
+\label{fig:MODEL}
 \end{figure}
 
 \FloatBarrier
 
 # Results
 
+The results from out model will be broken down into 3 sections. The first section will be dedicated to the frequent itemset mining and profit allocation. Following that we will cover the results from two different optimization scenarios and compare them. Finally we will analyses source of added revenue to 3 itemsets to validate the results.
+
 ## Frequent Itemsets And Profit Allocation
 
-As stated in the Chapter 2 the results will depend on the user input of minimum support when we are mining for frequent items. In all the following results this threashold was set to 3\% and the $\alpha$ constant in \eqref{upperlimit} set to 200000. The resulting frequent item sets and profit allocated to the can be seen in Table \ref{tab:tafla1}. The table is ranked from high to low in terms of the total profit allocated, *M(X)*. The column marked *P* in the table is the profit generated by the itemsets without any complimantery items, *P*.
-The last column is the ranking of *P*, and an intersting observation is that when we account for cross sell Playstation consoles moves up a set in the ranking which maks a lot of sense since when we account for the complimentary items such as games the console intreases in value to the retailer. 
+As stated in the Chapter 2 the results will depend on the user input of minimum support when we are mining for frequent items. In all the following results this threashold was set to 3\% and the $\alpha$ constant in Eq.\eqref{upperlimit} set to 200.000. 
 
-Of the 33263 transactions the upper limit function rejected 22141 and accepted 11121 transactions as complimentary to the frequent itemsets. An interesting observation at first glance is the fact that the items in row 35 is not allocated any profit beyond its own profit. This makes a lot of sense as these are highly frequent carrier bags but are at a very low price relative to other items in each transaction and should there for not be allocated any complimentary items. 
+The resulting frequent itemsets from *T* and profit allocated to each itemset the can be seen in Table \ref{tab:tafla1}. The table is ranked from high to low in terms of the total profit allocated, $M_X$. The column marked *P* in the table is the profit generated by the itemsets without any complimentary items.The last column (*Order*) is the ranking of *P*, and an interesting observation is that when we account for cross sell Playstation consoles moves up a set in the ranking which makes a lot of sense since when we account for the complimentary items such as games the console increases in value to the retailer.
 
-If we divide the total profit allocated profit with the own profit of each item we get the percentage of increase when we account for the cross sell of each item. This cross selling potential of each item is represented graphically in Fig.\ref{fig:CSpotential}. It should be noted to the reader that the percentage in the bar plot include the profit from the item itself so everything over 100% is considered a gain. So if look at the numbers in Fig.\ref{fig:CSpotential} we that they range from 100% to around 135%. These numbers seem quite reasonable and that is due to the restrictions we get from \eqref{upperlimit} which reduces inflation of unrealistic cross selling potential. In line 33 in \eqref{upperlimit} have mobile phone insurances(guarantee) and it might sound strange that something that should be in all cases be a complimentary item to mobile phone has seem cross selling potential. In the sample data there were 24 transactions that contain a mobile phone insurances but no mobile phone furthermore there are 6 more transaction containing mobile phones and insurances(guarantee)  where the insurance in priced higher than the phone. Those 30 transactions are responsible the results in line 33. Profit allocated in that line are very low compared to other itemsets and can be discarded. If we back at  Fig.\ref{fig:CSpotential} we see that category possessing the highest cross selling potential is PlayStation Console as it generates the highest fraction of cross sells in terms of its own revenues.
+Of the 33.263 transactions the upper limit function rejected 22.141 and accepted 11.121 transactions as complimentary to the frequent itemsets. An interesting observation at first glance is the fact that the items in row 35 is not allocated any profit beyond its own profit. This makes a lot of sense as these are highly frequent carrier bags but are at a very low price relative to other items in each transaction and should there for not be allocated any complimentary items. 
 
 ```{r table1, echo=F,eval=T,results='asis'}
 
 # #Remove whitespace from varchar(36)
 # ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
 # ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
+# format(round(Result3$frame1$M3), nsmall=0
+# as.character(format(round(NP), nsmall=0, big.mark=".",decimal=","))
 
 ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=", "), which = c("both", "left", "right"))
 
-PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"M(X)" = Result3$frame1$M3,"P" = as.character(round(NP,2)))
+PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"{M\\textsubscript{X}} (ISK)" = round(Result3$frame1$M3),"P (ISK)" = as.character(round(NP)))
 
 RADA <- order(-(as.numeric(PP[,3])))
 
@@ -1605,84 +1676,36 @@ PP <- PP[order(-(as.numeric(PP[,3]))),]
 
 PP <- cbind(PP,"Order"=order(-(as.numeric(PP[,4]))))
 
-# add color to rows
 linCol <- (which(as.numeric(PP[,4]) >= min(tail(sort(as.numeric(PP[,4])),5)))-1)
 col <- rep("\\rowcolor[gray]{0.90}", length(linCol))
 
-print(
-  xtable(
+PP[,2] <- format(as.numeric(PP[,2]), nsmall=2, big.mark=".",decimal=",")
+PP[,3] <- format(as.numeric(PP[,3]), nsmall=0, big.mark=".",decimal=",")
+PP[,4] <- format(as.numeric(PP[,4]), nsmall=0, big.mark=".",decimal=",")
+
+# add color to rows
+
+JJ <- xtable(
     PP,
-    caption = 'Results from profit allocation',
-    label = "tab:tafla1"
-  ),
+    caption = 'Results from profit allocation step for the 35 frequent itemsets discovered in T',
+    label = "tab:tafla1",
+    align="cllrrc",
+  )
+
+print(JJ,
   comment = FALSE,
   type = 'latex',
   #add.to.row = list(pos = as.list(linCol), command = col),
   caption.placement = "top",
-  table.placement="!h",
+  table.placement="H",
   floating = TRUE,
-  scalebox = 0.9
+  scalebox = 0.9,
+  sanitize.text.function = identity
 )
 
 ```
 
-```{r CSpotential, echo=F,eval=T,results='hide',fig.align='center',fig.cap="Cross selling in precentage, Numbers on x-axis correspond to rows in table \\ref{tab:tafla1} ",fig.height=3}
-options(warn=-1)
-
-
-
-
-ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
-ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
-
-
-windowsFonts(Times=windowsFont("Times New Roman"))
-percentage <- (round(((Result3$frame1$M3/NP3)),2))
-gagnarammi <- data.frame(cbind(ItemSet,percentage))
-gagnarammi$percentage <- round(as.numeric(levels(gagnarammi$percentage))[gagnarammi$percentage],2)
-
-
-#translate data to english,change to character and back
-if(F){
-  enska <- translate(content.vec = as.character(gagnarammi$ItemSet),
-                     google.api.key = 'AIzaSyBqhGsujiPTVSoMqgrPXzni3zdm7mtXqGs',
-                     source.lang = 'is',
-                     target.lang = 'en')
-  
-  gagnarammi$ItemSet <- as.factor(enska)
-}
-
-#gagnarammi <- gagnarammi[order(-(gagnarammi$percentage)),]
-gagnarammi <- gagnarammi[RADA,]
-gagnarammi$ItemSet <- factor(gagnarammi$ItemSet, levels = gagnarammi$ItemSet[order(-(gagnarammi$percentage))])
-
-#gagnarammi <- gagnarammi[c(1:20),]
-colfunc <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(nrow(gagnarammi))
-
-#upper <- round((max(na.omit(gagnarammi$percentage))+0.2)/0.5)*0.5
-upper <- 1.75
-
-#númar raðir
-gagnarammi$ItemSet <- as.factor(1:nrow(gagnarammi))
-
-
-ggplot(gagnarammi, aes(x = ItemSet,y = percentage,fill=ItemSet)) + geom_bar(stat = "identity",col="black") +
-  scale_fill_manual(values=colfunc) +
-  geom_hline(yintercept=1, color="red") +
-  geom_text(aes(y = percentage, label = scales::percent(percentage)),size=3.0,family = "Times",angle = 90,vjust = .4 ,hjust = -0.2) +
-  theme_bw()+
-  MTheme +
-  scale_y_continuous(breaks=seq(0,1.75,0.25),labels = scales::percent) +
-  ggtitle("Cross selling of discovered item sets") +
-  labs(x="Itemset") +
-  labs(y="Cross selling")+
-  theme(legend.position="none")+
-  coord_cartesian(ylim = c(0, 1.55)) 
-
-options(warn=0)
-```
-
-Fig.\ref{fig:CSpotential2} contains the results from PROFSET model without any our adjustments made it. As discussed in the section on the model a big portion of the profit allocated will be to the largest superset of items in each transaction. It is clear when we look at Fig.\ref{fig:CSpotential2} that columns 3,5,8 and 32 have some extreme profit allocated to them, by looking back at Table \ref{tab:tafla1} these are indeed the largest frequent itemsets. The profit allocated to these maximal itemsets are from the intersecting items between the sets, see column 3 and 5 in Fig.\ref{fig:CSpotential2}. The only conclusion we would be able to draw from this model is that mobile phones and fronts are likely to generate more profit than mobile phones ant guaranties. These limited results compelled us to revise the model. 
+\newpage
 
 ```{r CSpotential2, echo=F,eval=T,results='hide',fig.align='center',fig.cap="The resulting cross sell from the PROFSET model ",fig.height=3}
 options(warn=-1)
@@ -1742,13 +1765,79 @@ data@data <- P
 options(warn=0)
 ```
 
+```{r CSpotential, echo=F,eval=T,results='hide',fig.align='center',fig.cap="Cross selling in precentage, Numbers on x-axis correspond to rows in table \\ref{tab:tafla1} ",fig.height=3,fig.pos='H'}
+options(warn=-1)
+
+
+
+
+ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
+ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
+
+
+windowsFonts(Times=windowsFont("Times New Roman"))
+percentage <- (round(((Result3$frame1$M3/NP3)),2))
+gagnarammi <- data.frame(cbind(ItemSet,percentage))
+gagnarammi$percentage <- round(as.numeric(levels(gagnarammi$percentage))[gagnarammi$percentage],2)
+
+
+#translate data to english,change to character and back
+if(F){
+  enska <- translate(content.vec = as.character(gagnarammi$ItemSet),
+                     google.api.key = 'AIzaSyBqhGsujiPTVSoMqgrPXzni3zdm7mtXqGs',
+                     source.lang = 'is',
+                     target.lang = 'en')
+  
+  gagnarammi$ItemSet <- as.factor(enska)
+}
+
+#gagnarammi <- gagnarammi[order(-(gagnarammi$percentage)),]
+gagnarammi <- gagnarammi[RADA,]
+gagnarammi$ItemSet <- factor(gagnarammi$ItemSet, levels = gagnarammi$ItemSet[order(-(gagnarammi$percentage))])
+
+#gagnarammi <- gagnarammi[c(1:20),]
+colfunc <- colorRampPalette(c("lightsteelblue1", "lightsteelblue3"))(nrow(gagnarammi))
+
+#upper <- round((max(na.omit(gagnarammi$percentage))+0.2)/0.5)*0.5
+upper <- 1.75
+
+#númar raðir
+gagnarammi$ItemSet <- as.factor(1:nrow(gagnarammi))
+
+
+ggplot(gagnarammi, aes(x = ItemSet,y = percentage,fill=ItemSet)) + geom_bar(stat = "identity",col="black") +
+  scale_fill_manual(values=colfunc) +
+  geom_hline(yintercept=1, color="red") +
+  geom_text(aes(y = percentage, label = scales::percent(percentage)),size=3.0,family = "Times",angle = 90,vjust = .4 ,hjust = -0.2) +
+  theme_bw()+
+  MTheme +
+  scale_y_continuous(breaks=seq(0,1.75,0.25),labels = scales::percent) +
+  ggtitle("Cross selling of discovered item sets") +
+  labs(x="Itemset") +
+  labs(y="Profit Allocation")+
+  theme(legend.position="none")+
+  coord_cartesian(ylim = c(0, 1.55)) 
+
+options(warn=0)
+```
+
+
+Having established the results in Table \ref{tab:tafla1} we can compare the results from our improved model to PROFSET prior to adjustments we made. If we divide $M_X$ with $P$ we can see how much profit was added proprtionally to each itemset. 
+
+Fig.\ref{fig:CSpotential2} contains the results from PROFSET model without any our adjustments made it. As discussed in the section on the model a big portion of the profit allocated will be to the largest superset of items in each transaction. It is clear when we look at Fig.\ref{fig:CSpotential2} that columns 3,5,8 and 32 have some extreme profit allocated to them, by looking back at Table \ref{tab:tafla1} these are indeed the largest frequent itemsets. The profit allocated to these maximal itemsets are from the intersecting items between the sets, see column 3 and 5 in Fig.\ref{fig:CSpotential2}. The only conclusion we would be able to draw from this model is that mobile phones and fronts are likely to generate more profit than mobile phones ant guaranties. These limited results compelled us to revise the model.    
+
+
+If we divide the total profit allocated profit with the own profit of each item we get the percentage of increase when we account for the cross sell of each item. This cross selling potential of each item is represented graphically in Fig.\ref{fig:CSpotential}. It should be noted to the reader that the percentage in the bar plot include the profit from the item itself so everything over 100% is considered a gain. So if look at the numbers in Fig.\ref{fig:CSpotential} we that they range from 100% to around 135%. These numbers seem quite reasonable and that is due to the restrictions we get from \eqref{upperlimit} which reduces inflation of unrealistic cross selling potential. In line 33 in \eqref{upperlimit} have mobile phone insurances(guarantee) and it might sound strange that something that should be in all cases be a complimentary item to mobile phone has seem cross selling potential. In the sample data there were 24 transactions that contain a mobile phone insurances but no mobile phone furthermore there are 6 more transaction containing mobile phones and insurances(guarantee)  where the insurance in priced higher than the phone. Those 30 transactions are responsible the results in line 33. Profit allocated in that line are very low compared to other itemsets and can be discarded. If we back at  Fig.\ref{fig:CSpotential} we see that category possessing the highest cross selling potential is PlayStation Console as it generates the highest fraction of cross sells in terms of its own revenues.
+
+
+
 ```{r table2, echo=F,eval=F,results='asis'}
 
 #Remove whitespace from varchar(36)
 ItemSet <- trimws(sapply(as(e@items,"list"), paste0, collapse=""), which = c("both", "left", "right"))
 ItemSet <- gsub("(?<=[\\s+])\\s+|^\\s+|\\s+$", ",", ItemSet, perl=TRUE)
 
-PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"M(X)" = Result3$frame1$M3,"P" = as.character(round(NP,2)))
+PP <- cbind(ItemSet,"Support" = as.character(round(as.vector(unlist(e@quality)),2)),"M(X)" = round(Result3$frame1$M3),"P" = as.character(round(NP)))
 
 PP <- PP[order(-(as.numeric(PP[,3]))),]
 
@@ -1756,12 +1845,15 @@ PP <- PP[order(-(as.numeric(PP[,3]))),]
 linCol <- (which(as.numeric(PP[,4]) >= min(tail(sort(as.numeric(PP[,4])),5)))-1)
 col    <- rep("\\rowcolor[gray]{0.90}", length(linCol))
 
-print(
-  xtable(
+
+JJ <- xtable(
     PP,
     caption = 'Net worth of each set with cross selling potential included M(X) and indivitual sales profit P from each of the item-sets, higlighted in gray are tha top 5 items-sets that would be selected by the naive selection from simulation 1',
-    label = "tab:tafla2"
-  ),
+    label = "tab:tafla2",
+    format.args = list(big.mark = "'", decimal.mark = ",")
+  )
+align(JJ) <- "llrrc"  
+print(JJ,
   comment = FALSE,
   type = 'latex',
   add.to.row = list(pos = as.list(linCol), command = col),
@@ -1783,7 +1875,7 @@ When it comes to the results of the optimization step in the model we have to ch
 
 \FloatBarrier
 
-### case 1
+### Case 1
 For the following results we set a *ItemMax* of 12 and a maximum of 1 categorie from each group. By setting this *ItemMax* we set the lower bound of items from each group to 0. If we look table $\ref{tab:tafla3}$ we see that the last column indicates if the frequent itemset was included in the optimal solution or not indicated by a *TRUE* or *FALSE* and color-coded as well.  
 
 ```{r table3, echo=F,eval=T,results='asis'}
@@ -1855,7 +1947,7 @@ print(TP,
 
 \FloatBarrier
 
-### case 2
+### Case 2
 For the following results we set the same *ItemMax* of 12 but changed the maximum number of items from each group to 2.Lower bound of items from each group was again 0. If we look table $\ref{tab:tafla33}$ we see that the last column indicates if the frequent itemset was included in the optimal solution or not indicated by a *TRUE* or *FALSE* and color-coded as well 
 
 ```{r table33, echo=F,eval=T,results='asis'}
@@ -1925,6 +2017,9 @@ print(TP,
 )
 
 ```
+
+
+### Comparison
 
 We can see some difference in these result tables. As the maximum number of categories allowed from each group increases by 1 the model will favor selecting more from the most profitable groups. This we see in $\ref{tab:tafla33}$ where chargers and ink cartridges have been dropped from the optimal set and the more profitable itemsets of size 2 in row 3 is selected instead . The itemset in row 3 includes mobile phonse just as the itemset in row 1. This goes hand in hand with was discussed in \ref{sssec:opti}. So to increase diversity of categories in the optimal set we have to set the maximum number of categories from each group to 1. 
 
@@ -2410,10 +2505,6 @@ options(warn=0)
 \FloatBarrier
 
 # Discussions
-
-\FloatBarrier
-
-## Conclutions and Descussions
 
 Results from our study are promising and can provide useful information from a different perspective when we are evaluating the profit generated by frequent itemsets. We believe that the results from the revised profit allocation are acceptable and can give better insight into the actual profit generated by the frequent itemsets. Our version of the profit allocation is able to prevent unrealistic inflation in cross selling potential. This model could be implemented in other retail industries where data has similarities in terms of price variance and basket size for example sporting goods stores and fashion outlets. It was mentioned in chapter 2 we were only able to do the analysis in the top two levels in the store hierarchy but the results could be a good guideline for category managers that are employed in the store both when it comes to selecting items for promotions as well as assisting customers on purchases in the store. It would be very interesting to see how the model would perform on the bottom two levels in the store, it is quite obvious that frequent itemset mining would not be likely to yield any results on the 3 level in the store. It is however very common that retailers attach a vendor description to each item. By using this vendor description we can add somewhat of a half layer in the hierarchy containing information on both category and manufacturer of the item. We are confident that by adding this information we would be able to extend further down the hierarchy and determine the most profitable vendor within each category with the same methods as used in this thesis. The results from that would further narrow the target and we could determine which manufacturer should be included in for example an advertising campaign etc.
 
