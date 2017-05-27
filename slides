@@ -1,0 +1,537 @@
+<<echo=FALSE,eval=F,results='hide'>>=
+
+knitr::opts_chunk$set(echo = FALSE)
+options(warn=-1)
+
+old.folder <- "C:/Users/Julius/OneDrive - Reykjavik University/MThesis/ritgerd2/JULLSET3_files/figure-latex"
+
+list.of.files <- list.files("C:/Users/Julius/OneDrive - Reykjavik University/MThesis/ritgerd2/JULLSET3_files/figure-latex/")
+
+list.of.files <- paste(old.folder, list.of.files, sep="/")
+
+new.folder <- "C:/Users/Julius/OneDrive - Reykjavik University/MThesis/slides/Figures"
+
+file.copy(list.of.files, new.folder, overwrite = TRUE)
+
+options(warn=0)
+
+@
+\documentclass[utf8,aspectratio=169]{beamer}
+%\documentclass[utf8,handout]{beamer}
+\usetheme[pageofpages={of},	% String used between the current page and the total page count.
+          bullet=circle,% Use circles instead of squares for bullets.
+          titleline=true,% Show a line below the frame title.
+          alternativetitlepage=true,% Use the fancy title page.
+          titlepagelogo=rulogo,% Logo for the first page.
+          watermark=rulogow,% Watermark used in every page.
+          watermarkheight=75px,% Height of the watermark.
+          watermarkheightmult=20,% The watermark image is 4 times bigger
+                                % than watermarkheight.
+          ]{ru}
+%,handout
+\author{Júlíus Pétur Guðjohnsen}
+\title{Mining For Products With High Cross-Selling Potential}
+\institute{Reykjavik University}
+\date{May 30th, 2017}
+
+%\usepackage[latin1]{inputenc}
+%\usepackage[icelandic]{babel}
+%\usepackage[pdftex]{graphicx}
+\usepackage{algorithm2e}
+\usepackage{colortbl, tabularx, rotating}
+\usepackage{docmute}
+\usepackage[edges]{forest}
+\usetikzlibrary{arrows.meta,shadows.blur}
+\usepackage[section]{placeins}
+\usepackage{booktabs}
+\usepackage{caption,setspace}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{shapes,backgrounds,positioning,fit,calc,shapes.multipart}
+\usepackage{transparent}
+
+\makeatletter
+\patchcmd{\Ginclude@eps}{"#1"}{#1}{}{}
+\makeatother
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\newcolumntype{C}[1]{>{\centering}p{#1}}
+
+%\usepackage{handoutWithNotes}
+%\pgfpagesuselayout{3 on 1 with notes}[a4paper,border shrink=5mm]
+%\pgfpageslogicalpageoptions{1}{border code=\pgfusepath{stroke}}
+%\pgfpageslogicalpageoptions{2}{border code=\pgfusepath{stroke}}
+%\pgfpageslogicalpageoptions{3}{border code=\pgfusepath{stroke}}
+
+\setbeamercolor{caption name}{fg=black}
+
+\definecolor{steeleblue}{RGB}{202,225,255}
+\definecolor{steeleblue2}{RGB}{188,210,238}
+\definecolor{steeleblue3}{RGB}{162,181,205}
+
+\definecolor{tsteeleblue}{RGB}{99,184,255}
+\definecolor{tsteeleblue2}{RGB}{92,172,238}
+\definecolor{tsteeleblue3}{RGB}{79,148,205}
+
+
+%julg
+\makeatletter
+\renewcommand{\itemize}[1][]{%
+  \beamer@ifempty{#1}{}{\def\beamer@defaultospec{#1}}%
+  \ifnum \@itemdepth >2\relax\@toodeep\else
+    \advance\@itemdepth\@ne
+    \beamer@computepref\@itemdepth% sets \beameritemnestingprefix
+    \usebeamerfont{itemize/enumerate \beameritemnestingprefix body}%
+    \usebeamercolor[fg]{itemize/enumerate \beameritemnestingprefix body}%
+    \usebeamertemplate{itemize/enumerate \beameritemnestingprefix body begin}%
+    \list
+      {\usebeamertemplate{itemize \beameritemnestingprefix item}}
+      {\def\makelabel##1{%
+          {%
+            \hss\llap{{%
+                \usebeamerfont*{itemize \beameritemnestingprefix item}%
+                \usebeamercolor[fg]{itemize \beameritemnestingprefix item}##1}}%
+          }%
+        }%
+      }
+  \fi%
+  \setlength\itemsep{\fill}
+    \ifnum \@itemdepth >1
+        \vfill
+    \fi%  
+  \beamer@cramped%
+  \raggedright%
+  \beamer@firstlineitemizeunskip%
+}
+
+\def\enditemize{\ifhmode\unskip\fi\endlist%
+  \usebeamertemplate{itemize/enumerate \beameritemnestingprefix body end}
+  \ifnum \@itemdepth >1
+        \vfil
+  \fi%  
+  }
+\makeatother
+%julg
+
+
+
+
+
+
+\begin{document}
+\begin{frame}[t,plain]
+	\titlepage
+\end{frame}
+
+\watermarkoff
+\begin{frame}[fragile]
+\frametitle{Acknowledgement}
+\textit{I would like to thank both my supervisors Hlynur Stefánsson and Eyjólfur Ingi Ásgeirsson for their positive and encouraging input during the work of this thesis. 
+I would also like to thank the team at LS Retail for giving me the opportunity to work at their offices and giving assistance when needed. 
+Furthermore I would also like to thank the electronics retailer supplying the data in this project.}
+\end{frame}
+
+\begin{frame}{Overview}
+\tableofcontents
+\end{frame}
+
+\section{Introduction}
+
+\setbeamercovered{transparent}
+\begin{frame}[fragile]
+\frametitle{Introduction}
+  \begin{itemize}[<+->]
+  \setlength\itemsep{\fill}
+    \item \textbf{The research goal:}
+    \begin{itemize}
+    \item<.-> Derive a method to discover items that have high cross-selling potential. 
+    \item<.-> From the items discovered, select the ones best suited promotions.
+    \item<.-> Identify the complimentary items of those high cross-selling items that can be used for recommendations.
+    \end{itemize}
+    \item \textbf{Cross-Sell:}
+    \begin{itemize}
+    \item<.-> \textit{Cross-sell is the practice of \textbf{selling} or suggesting related or complementary products to a prospect or customer.} - Investopedi
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\watermarkoff
+\begin{frame}[fragile]
+\frametitle{Backround}
+<<echo=FALSE,fig.height=4,fig.align='center',out.height='.8\\textheight',out.width='.8\\textwidth'>>=
+knitr::include_graphics("Figures/itemfrequency-1.pdf")
+@
+\end{frame}
+
+
+
+\watermarkoff
+\begin{frame}[fragile]
+\frametitle{Item Frequency}
+<<echo=FALSE,fig.height=4,fig.align='center',out.height='.8\\textheight',out.width='.8\\textwidth'>>=
+knitr::include_graphics("Figures/itemfrequency-1.pdf")
+@
+
+\end{frame}
+\watermarkon
+
+\section{Methods}
+\subsection{Date and Preprocessing}
+
+\frame{
+\frametitle{Data Overview}
+  \setbeamercovered{transparent}
+  \begin{itemize}[<+->]
+  \setlength\itemsep{1em}
+    \item Point Of Sales (POS) data spanning a two year period.
+    \item Aggregated over three store locations.
+    \item 1.8 million items sold within the membership program.
+    \item 1 million transactions
+    \item 188.000 Customer ID's
+    \item 67\% of baskets contain single item
+  \end{itemize}
+}
+
+
+\frame{
+\frametitle{test}
+  \begin{figure}
+  \resizebox{.7\linewidth}{!}{
+  \begin{forest}
+    forked edges,
+    for tree={
+      if level=0{align=center}{% allow multi-line text and set alignment
+          align={@{}C{5mm}@{}},
+      },
+      draw=black,
+      fill=steeleblue,
+      minimum height=8ex,
+      edge={-Latex},
+      text centered,
+      font=\scriptsize,
+      grow'=0,
+      align=c,
+      rounded corners
+    },
+    highlight/.style={
+      thick
+    }
+    [{Query \\Database}, highlight
+      [{Preprocess, \\Sample data}, highlight
+        [{Discover \\Frequent sets}, highlight
+          [{Allocate \\Profit}, highlight
+            [{Select \\Optimal sets}, highlight
+              [{Visualize \\Results}, highlight
+              ]
+            ]
+          ]  
+        ]
+      ]
+    ]
+  \end{forest}
+  }
+  \caption{Model Diagram}
+  \label{MODEL}
+  \end{figure}
+  \setbeamercovered{transparent}
+  \begin{itemize}[<+->]
+  \setlength\itemsep{2em}
+    \item Hallo
+    \item Welt
+    \item Foobar
+  \end{itemize}
+}
+
+
+\watermarkoff
+\begin{frame}[fragile]
+\frametitle{Store Hierarchy}
+\begin{figure}
+
+\resizebox{.7\linewidth}{!}{
+\begin{forest}
+ forked edges,
+  for tree={
+    if level=0{align=center}{% allow multi-line text and set alignment
+        align={@{}C{11mm}@{}},
+     },
+    draw=black,
+    fill=steeleblue,
+    minimum height=8ex,
+    edge={-Latex},
+    text centered,
+    font=\scriptsize,
+    rounded corners
+  }
+   [{Store}, align=center, name=S
+	[{LCD\\TV}, name=SS
+  		[{22" \\LCD\\TV}, name=PDC
+    			[{22" \\LG}, name=MS]
+    			[{22" \\Samsung}]
+ 	 	]
+  		[{55" \\LCD\\TV}
+   			[{55" \\ LG}]
+   			[{55"\\Sony}]
+  		]
+	]
+	[{Mobile\\Phone}, name=SS2
+  		[{Smart \\Phone}, name=PDC2
+    			[{4" \\Iphone}, name=MS2]
+    			[{4" \\Samsung}]
+  		]
+  		[{GSM \\Phone}
+   			[{Nokia\\ 3210}]
+   			[{Ericson\\A1018}]
+  		]
+	]
+]
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west) {\textbf{Level 3}\\Items\\i=1...20000};
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west|-PDC) {\textbf{Level 2}\\ Item-Category\\m=1...410};
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west|-SS) {\textbf{Level 1}\\Item-Group\\n=1...161};    
+\end{forest}
+
+}
+\caption{The Product Hierarchy present at the electronics retailer}
+\label{fig:marker}
+\end{figure}
+\end{frame}
+\watermarkon
+
+
+
+\watermarkoff
+\begin{frame}[fragile]
+\frametitle{Limitations}
+\begin{figure}
+
+\resizebox{.7\linewidth}{!}{
+\begin{forest}
+ forked edges,
+  for tree={
+    if level=0{align=center}{% allow multi-line text and set alignment
+        align={@{}C{11mm}@{}},
+     },
+    draw=black,
+    fill=steeleblue,
+    minimum height=8ex,
+    edge={-Latex},
+    text centered,
+    font=\scriptsize,
+    rounded corners
+  }
+   [{Store}, align=center, name=S
+	[{LCD\\TV}, name=SS
+  		[{22" \\LCD\\TV}, name=PDC
+ 	 	]
+  		[{55" \\LCD\\TV}
+  		]
+	]
+	[{Mobile\\Phone}, name=SS2
+  		[{Smart \\Phone}, name=PDC2
+  		]
+  		[{GSM \\Phone}
+  		]
+	]
+]
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west|-PDC) {\textbf{Level 2}\\ Item-Category\\m=1...410};
+\node[anchor=west,align=left] 
+  at ([xshift=-2.8cm]MS.west|-SS) {\textbf{Level 1}\\Item-Group\\n=1...161};     
+\end{forest}
+
+}
+\caption*{The two levels used in our modeling}
+\label{fig:marker}
+\end{figure}
+\end{frame}
+\watermarkon
+
+
+\frame{
+\frametitle{Relational Date Model}
+<<echo=FALSE,fig.height=4,fig.align='center',out.height='.8\\textheight',out.width='.8\\textwidth',out.extra='keepaspectratio',fig.cap="Relational model of the database">>=
+knitr::include_graphics("Figures/export9.pdf")
+@
+}
+
+
+\frame{
+\frametitle{Basket Size}
+<<echo=FALSE,fig.height=4,fig.align='center',out.height='.8\\textheight',out.width='.8\\textwidth',out.extra='keepaspectratio',fig.cap="Relational model of the database">>=
+knitr::include_graphics("Figures/Basketsize-1.pdf")
+@
+}
+
+
+\frame{
+\frametitle{Sampling}
+  \setbeamercovered{transparent}
+  \begin{itemize}[<+->]
+  \setlength\itemsep{1em}
+    \item Sample 100.000 transaction ID's.
+    \item Sampling is random, Uniformly distributed.
+    \item Aggregated on customer ID's.
+    \item 35.000 partial historical baskets.  
+    \item Results in anverage basket size of 3,5 items.
+    \item 188.000 Customer ID's
+  \end{itemize}
+}
+
+
+\frame{
+<<echo=FALSE,eval=T,results='hide'>>=
+CustomerID <- c("CID=12","...","...","CID=n") 
+
+aa1 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa2 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa3 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa4 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa5 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa6 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa7 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+aa8 = c(paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)), paste0("item-",sample(1:40, 1, replace=F)),paste0("item-",sample(1:40, 1, replace=F)))
+
+CIDhistory <- as.data.frame(cbind(CustomerID, aa1,aa2,aa3,aa4,aa5,aa6,aa7,aa8),stringsAsFactors = F)
+
+litafunc <- function(x){g <- (x)
+                        for(p in 1:2){
+                        if(p==1){
+                          liturinn <- "steeleblue"
+                          Jay <- sample(2:3, 1) }
+                        if(p==2){
+                          liturinn <- "steeleblue2"
+                          Jay <- sample(6:7, 1)}
+                        x[[(Jay)]] <- paste0("\\cellcolor{",liturinn,"}{", g[[(Jay)]], "}")
+                        if(0==sample(c(0,1),1)){x[[(Jay+1)]] <- paste0("\\cellcolor{",liturinn,"}{", g[[(Jay+1)]], "}")}
+                        }
+                        return(x)
+}
+
+
+for(o in 1:nrow(CIDhistory)){
+  CIDhistory[o,] <- litafunc(CIDhistory[o,])
+}
+CIDhistory[] <- lapply( CIDhistory, factor)
+colnames(CIDhistory) <-  c("CID", " ", " ", " ", " ", " ", " ", " ", " ")
+
+@
+\frametitle{Data Sampling}
+\begin{table}[H]
+\centering
+\caption{\\Random sampling of transactions from customer purchase history}
+\label{table:CIDhistory}
+<<echo=FALSE,eval=T,results='asis'>>=
+suppressPackageStartupMessages(require(xtable))
+julli <- xtable(CIDhistory,auto = TRUE)
+align(julli) <- "|c|c|cccccccc|"
+print(julli,floating=FALSE,include.rownames=FALSE,hline.after=c(0:nrow(CIDhistory)),scalebox = 0.85,include.colnames = FALSE,sanitize.text.function = function(x) x)
+@
+\end{table}
+}
+
+
+\subsection{Modeling}
+
+\frame{
+\frametitle{Frequent Itemset mining}
+  \setbeamercovered{transparent}
+  \begin{itemize}%[<+->]
+  \setlength\itemsep{1em}
+    \item We will only explore cross selling potential of frequent itemsets.
+    \item Exploring all itemsets is not possible due to RAM limitations.
+    \item Without limiting us to frequent Itemsets we would have to check $2^{410}$ itemsets.
+    \item Results for non frequent itemsets hold little value to the retailer.
+  \end{itemize}
+}
+
+
+\frame{
+\frametitle{Frequent Itemset mining}
+\begin{figure}[H]
+  \centering
+  \resizebox{0.6\textwidth}{0.6\textheight}{%
+  \begin{tikzpicture}
+    \node (max) at (0,4) [rectangle,draw]{$\{a,b,c,d\}$};
+    \node (t1) at (-3,2) [rectangle,draw,fill=steeleblue]{$\{a,b,c\}$};
+    \node (t2) at (-1,2) [rectangle,draw]{$\{a,b,d\}$};
+    \node (t3) at (1,2) [rectangle,draw]{$\{a,c,d\}$};
+    \node (t4) at (3,2) [rectangle,draw]{$\{b,c,d\}$};
+    \node (m1) at (-5,0) [rectangle,draw,fill=steeleblue]{$\{a,b\}$};
+    \node (m2) at (-3,0) [rectangle,draw]{$\{a,c\}$};
+    \node (m3) at (-1,0) [rectangle,draw]{$\{a,d\}$};
+    \node (m4) at (1,0) [rectangle,draw]{$\{b,c\}$};
+    \node (m5) at (3,0) [rectangle,draw]{$\{b,d\}$};
+    \node (m6) at (5,0) [rectangle,draw]{$\{c,d\}$};
+    \node (b1) at (-3,-2) [rectangle,draw,fill=steeleblue]{$\{a\}$};
+    \node (b2) at (-1,-2) [rectangle,draw]{$\{b\}$};
+    \node (b3) at (1,-2) [rectangle,draw]{$\{c\}$};
+    \node (b4) at (3,-2) [rectangle,draw]{$\{d\}$};
+    \draw (max) -- (t1);
+    \draw (max) -- (t2);
+    \draw (max) -- (t3);
+    \draw (max) -- (t4);
+    \draw (t1) -- (m1);
+    \draw (t1) -- (m2);
+    \draw (t1) -- (m4);
+    \draw (t2) -- (m1);
+    \draw (t2) -- (m3);
+    \draw (t2) -- (m5);
+    \draw (t3) -- (m2);
+    \draw (t3) -- (m3);
+    \draw (t3) -- (m6);
+    \draw (t4) -- (m4);
+    \draw (t4) -- (m5);
+    \draw (t4) -- (m6);
+    \draw (m1) -- (b1);
+    \draw (m1) -- (b2);
+    \draw (m2) -- (b1);
+    \draw (m2) -- (b3);
+    \draw (m3) -- (b1);
+    \draw (m3) -- (b4);
+    \draw (m4) -- (b2);
+    \draw (m4) -- (b3);
+    \draw (m5) -- (b2);
+    \draw (m5) -- (b4);
+    \draw (m6) -- (b3);
+    \draw (m6) -- (b4);
+  \end{tikzpicture}
+  }
+\caption{Hasse diagram of all possible itemsets}
+\label{fig:hasse}
+\end{figure}
+}
+
+
+
+\section{Resuts}
+
+\frame{
+\frametitle{Mobile Phones}
+<<echo=FALSE,fig.height=4,fig.align='center',out.height='.8\\textheight',out.width='.8\\textwidth'>>=
+knitr::include_graphics("Figures/CROSSELL2-1.pdf")
+@
+}
+
+
+
+\section{Questions}
+
+\frame{
+\frametitle{Questions}
+Questions ?
+}
+
+
+\end{document}
